@@ -1,0 +1,41 @@
+<Configuration status="warn"
+               packages="net.minecrell.terminalconsole,net.minecrell.terminalconsole.util,net.minecraftforge.fml.loading.log4j,io.papermc.paper.console"
+               shutdownHook="disable">
+    <filters>
+        <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+    </filters>
+    <Appenders>
+        <TerminalConsole name="Console">
+            <PatternLayout>
+                <LoggerNamePatternSelector
+                        defaultPattern="%highlightForge{[%d{HH:mm:ss}] [%t/%level] [%c{2.}/%markerSimpleName]: %paperMinecraftFormatting{%msg}%n}">
+                </LoggerNamePatternSelector>
+            </PatternLayout>
+        </TerminalConsole>
+        <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout
+                    pattern="[%d{ddMMMyyyy HH:mm:ss.SSS}] [%t/%level] [%logger/%markerSimpleName]: %paperMinecraftFormatting{%msg}{strip}%n%xEx"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <OnStartupTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy max="99" fileIndex="min"/>
+        </RollingRandomAccessFile>
+        <RollingRandomAccessFile name="DebugFile" fileName="logs/debug.log" filePattern="logs/debug-%i.log.gz">
+            <PatternLayout
+                    pattern="[%d{ddMMMyyyy HH:mm:ss.SSS}] [%t/%level] [%logger/%markerSimpleName]: %paperMinecraftFormatting{%msg}{strip}%n%xEx"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5" fileIndex="min"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="all">
+            <AppenderRef ref="Console" level="info"/>
+            <AppenderRef ref="File" level="info"/>
+            <AppenderRef ref="DebugFile" level="debug"/>
+        </Root>
+    </Loggers>
+</Configuration>
