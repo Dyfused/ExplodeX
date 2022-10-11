@@ -78,12 +78,15 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 	override suspend fun submitBeforeAssessment(
 		env: DataFetchingEnvironment, assessmentGroupId: String?, medalLevel: Int?
 	): BeforePlaySubmitModel {
+		val u = env.getUser().baah("invalid user token")
 		val assessment = labyrinth.assessmentInfoFactory.getAssessmentGroupById(assessmentGroupId.baah())
 			.baah("Invalid assessment group!").getAssessmentForMedal(medalLevel.baah()).baah("Invalid medal level!")
 
 		val rid = generateUUID()
 
 		assessmentSubmitCache.put(rid, assessment.id)
+
+		BeforeAssessmentEvent(u, assessment).dispatchEvent()
 
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(rid))
 	}
@@ -107,6 +110,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 			ass.id, u.id, recs, exRec
 		)
 
+		AfterAssessmentEvent(u, ass, record).dispatchEvent()
+
 		return AfterAssessmentModel(record.result, u.calculateR(), u.coin, u.diamond)
 	}
 
@@ -116,12 +121,14 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 	override suspend fun submitBeforePlay(
 		env: DataFetchingEnvironment, chartId: String?, PPCost: Int?, eventArgs: String?
 	): BeforePlaySubmitModel {
-		/*val u = */env.getUser().baah("invalid user token")
+		val u = env.getUser().baah("invalid user token")
 		val c = labyrinth.songChartFactory.getSongChartById(chartId.baah("invalid chart id")).baah("invalid chart")
 
 		val rid = generateUUID()
 
 		gameSubmitCache.put(rid, c.id)
+
+		BeforePlayEvent(u, c).dispatchEvent()
 
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(rid))
 	}
@@ -142,6 +149,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 
 		labyrinth.gameRecordFactory.createGameRecord(c.id, u.id, perfect.baah(), good.baah(), miss.baah(), score.baah(), r)
 		val record = labyrinth.gameRecordFactory.getPlayerBestChartRecord(c.id, u.id).baah()
+
+		AfterPlayEvent(u, c, record).dispatchEvent()
 
 		return AfterPlaySubmitModel(
 			RankingModel(true, RankModel(record.ranking.baah())),
