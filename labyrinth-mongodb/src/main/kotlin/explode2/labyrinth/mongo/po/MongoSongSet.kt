@@ -15,6 +15,6 @@ data class MongoSongSet(
 	val chartIds: List<String>,
 	val publishTime: OffsetDateTime,
 	val category: Int,
-	val isHidden: Boolean,
-	val isReviewing: Boolean,
+	val hidden: Boolean,
+	val reviewing: Boolean,
 )

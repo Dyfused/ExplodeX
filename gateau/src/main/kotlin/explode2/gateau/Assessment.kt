@@ -15,4 +15,6 @@ interface Assessment {
 	val assessmentCharts: List<AssessmentChart>
 
 	fun getAssessmentRecords(limit: Int, skip: Int): List<AssessmentRecord>
+
+	fun getBestAssessmentRecordForPlayer(user: GameUser): AssessmentRecord?
 }

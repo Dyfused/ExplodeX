@@ -96,9 +96,9 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		}
 		if(matchingCategory != null) {
 			if(matchingCategory == SearchCategory.HIDDEN) {
-				filter = and(filter, MongoSongSet::isHidden eq true)
+				filter = and(filter, MongoSongSet::hidden eq true)
 			} else {
-				filter = and(filter, MongoSongSet::isHidden eq false)
+				filter = and(filter, MongoSongSet::hidden eq false)
 				when(matchingCategory) {
 					SearchCategory.OFFICIAL -> {
 						filter = and(filter, MongoSongSet::category eq 2)
@@ -113,7 +113,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 					}
 
 					SearchCategory.REVIEW -> {
-						filter = and(filter, MongoSongSet::isReviewing eq true)
+						filter = and(filter, MongoSongSet::reviewing eq true)
 					}
 
 					else -> {}
@@ -431,14 +431,14 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 						delegate = updateMongoSongSet(id, delegate.copy(category = value))
 					}
 				override var isHidden: Boolean
-					get() = delegate.isHidden
+					get() = delegate.hidden
 					set(value) {
-						delegate = updateMongoSongSet(id, delegate.copy(isHidden = value))
+						delegate = updateMongoSongSet(id, delegate.copy(hidden = value))
 					}
 				override var isReviewing: Boolean
-					get() = delegate.isReviewing
+					get() = delegate.reviewing
 					set(value) {
-						delegate = updateMongoSongSet(id, delegate.copy(isReviewing = value))
+						delegate = updateMongoSongSet(id, delegate.copy(reviewing = value))
 					}
 			}
 
@@ -703,23 +703,27 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val name: String
 			get() = delegate.name
 		override val assessmentIds: List<String>
-			get() = delegate.assessments.map { it.value.id }
+			get() = delegate.assessments.map { it.id }
 		override val assessments: List<Assessment>
-			get() = delegate.assessments.values.map(::AssessmentDelegate)
+			get() = delegate.assessments.map(::AssessmentDelegate)
 
 		override fun setAssessmentForMedal(medalLevel: Int, assessment: Assessment) {
-			val replaced = delegate.assessments.toMutableMap().apply {
-				put(
-					medalLevel.toString(),
-					MongoAssessment(
-						assessment.id,
-						assessment.healthBarLength,
-						assessment.normalPassAccuracy,
-						assessment.goldenPassAccuracy,
-						assessment.exMissRate,
-						assessment.assessmentChartIds
-					)
-				)
+			val replaced = delegate.assessments.toMutableList().apply {
+				replaceAll {
+					if(it.medalLevel == medalLevel) {
+						MongoAssessment(
+							assessment.id,
+							medalLevel,
+							assessment.healthBarLength,
+							assessment.normalPassAccuracy,
+							assessment.goldenPassAccuracy,
+							assessment.exMissRate,
+							assessment.assessmentChartIds
+						)
+					} else {
+						it
+					}
+				}
 			}
 			delegate = updateMongoAssessmentGroup(id, delegate.copy(assessments = replaced))
 		}
@@ -732,14 +736,22 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			exMissRate: Double,
 			assessmentChartIds: List<String>
 		) {
-			val replaced = delegate.assessments.toMutableMap().apply {
-				put(
-					medalLevel.toString(),
-					MongoAssessment(
-						createNewRandomUUID(),
-						healthBarLength, normalPassAccuracy, goldenPassAccuracy, exMissRate, assessmentChartIds
-					)
-				)
+			val replaced = delegate.assessments.toMutableList().apply {
+				replaceAll {
+					if(it.medalLevel == medalLevel) {
+						MongoAssessment(
+							createNewRandomUUID(),
+							medalLevel,
+							healthBarLength,
+							normalPassAccuracy,
+							goldenPassAccuracy,
+							exMissRate,
+							assessmentChartIds
+						)
+					} else {
+						it
+					}
+				}
 			}
 			delegate = updateMongoAssessmentGroup(id, delegate.copy(assessments = replaced))
 		}
@@ -748,7 +760,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			override val id: String
 				get() = delegateAss.id
 			override val medalLevel: Int
-				get() = delegate.assessments.entries.first { (_, v) -> v.id == delegateAss.id }.key.toInt()
+				get() = delegateAss.medalLevel
 			override val healthBarLength: Double
 				get() = delegateAss.healthBarLength
 			override val normalPassAccuracy: Double
@@ -770,7 +782,11 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				}
 
 			override fun getAssessmentRecords(limit: Int, skip: Int): List<AssessmentRecord> {
-				return getAssessmentRecords(delegate.id, limit, skip)
+				return getAssessmentRecords(delegateAss.id, limit, skip)
+			}
+
+			override fun getBestAssessmentRecordForPlayer(user: GameUser): AssessmentRecord? {
+				return getPlayerBestAssessmentRecord(this.id, user.id)
 			}
 		}
 	}

@@ -9,14 +9,14 @@ data class MongoAssessGroup(
 	val name: String,
 	// 契合单例模式，为 true 时作为单例
 	val selected: Boolean,
-	val assessments: Map<String, MongoAssessment>
+	val assessments: List<MongoAssessment>
 ) {
 	companion object {
 		val EMPTY = MongoAssessGroup(
 			createNewRandomUUID(),
 			"Empty Template",
 			true,
-			mapOf()
+			listOf()
 		)
 	}
 }

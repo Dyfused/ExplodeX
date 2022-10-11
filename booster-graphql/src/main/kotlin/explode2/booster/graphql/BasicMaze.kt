@@ -212,7 +212,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 	override suspend fun assessmentGroup(
 		env: DataFetchingEnvironment, limit: Int?, skip: Int?
 	): List<AssessmentGroupModel> {
-		return labyrinth.assessmentInfoFactory.getAssessmentGroups().map(AssessmentGroup::tunerize)
+		val u = env.getUser().baah("invalid user token")
+		return labyrinth.assessmentInfoFactory.getAssessmentGroups().map { it.tunerize(u) }
 	}
 
 	override suspend fun assessmentRank(

@@ -31,13 +31,13 @@ fun SongChart.tunerize() = ChartModel(
 	this.difficultyValue
 )
 
-fun AssessmentGroup.tunerize() = AssessmentGroupModel(
+fun AssessmentGroup.tunerize(user: GameUser? = null) = AssessmentGroupModel(
 	this.id,
 	this.name,
-	this.assessments.map(Assessment::tunerize)
+	this.assessments.map { it.tunerize(user) }
 )
 
-fun Assessment.tunerize() = AssessmentModel(
+fun Assessment.tunerize(user: GameUser? = null) = AssessmentModel(
 	this.id,
 	this.medalLevel,
 	this.healthBarLength,
@@ -45,7 +45,7 @@ fun Assessment.tunerize() = AssessmentModel(
 	this.goldenPassAccuracy,
 	this.exMissRate,
 	this.assessmentCharts.map(AssessmentChart::tunerize),
-	this.getAssessmentRecords(1, 0).map(AssessmentRecord::tunerizeRecs) // TODO: Validate if the return is correct
+	listOfNotNull(user?.let { this.getBestAssessmentRecordForPlayer(it)?.tunerizeRecs() })
 )
 
 fun AssessmentChart.tunerize() = AssessmentChartModel(
