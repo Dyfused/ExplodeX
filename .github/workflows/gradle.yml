@@ -25,3 +25,10 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         arguments: build -x test
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Explode
+        path: |
+          explode-all/build/libs/
+          explode-proxy/build/libs/
