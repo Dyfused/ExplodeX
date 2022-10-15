@@ -8,11 +8,14 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io") {
+        mavenContent {
+            includeGroup("com.github")
+        }
+    }
 }
 
 dependencies {
-    api(project(":labyrinth"))
-
     // providing logging
     api("org.slf4j:slf4j-api:2.0.3")
     api("org.apache.logging.log4j:log4j-api:2.19.0")
@@ -26,7 +29,7 @@ dependencies {
     implementation("org.fusesource.jansi:jansi:2.4.0")
 
     // providing configuring
-    api("com.electronwill.night-config:toml:3.6.6")
+    api("com.github.Taskeren:TConfig:1.2")
 
     // providing eventbus
     api("org.greenrobot:eventbus-java:3.3.1")

@@ -1,5 +1,6 @@
 package explode2.booster
 
+import explode2.booster.Booster.config
 import explode2.booster.Booster.dispatchEvent
 import explode2.booster.event.KtorInitEvent
 import explode2.booster.event.KtorModuleEvent
@@ -21,8 +22,14 @@ lateinit var ktorServer: NettyApplicationEngine private set
 
 fun main() {
 
+	Thread.currentThread().setUncaughtExceptionHandler { _, ex ->
+		logger.error("Fatal exception occurred on Main thread", ex)
+	}
+
+	// 加载插件
 	ServiceManager.loadServiceLoader(serviceLoader)
 
+	// 检查插件数量，为零直接退出
 	ServiceManager.validateStatus()
 
 	logger.info("Pre-initializing plugins")
@@ -34,41 +41,49 @@ fun main() {
 	logger.info("Post-initializing plugins")
 	ServiceManager.dispatchPostInit()
 
-	val initEvent: KtorInitEvent = KtorInitEvent().dispatchEvent()
+	// 启动服务器线程
+	thread(name = "ktor") {
+		var addr: String
+		var port: Int
 
-	fun boostKtor() {
+		// 从配置中读
+		addr = config.getString("addr", "general", "0.0.0.0", "后端监听的地址")
+		port = config.getInt("port", "general", 10443, 0, 65535, "后端监听的端口")
+		config.save() // 如果没有文件则把默认值写入
+
 		// 系统配置覆写
-		System.getProperty("ex.addr")?.let { initEvent.bindAddr = it }
-		System.getProperty("ex.port")?.let { initEvent.bindPort = it.toInt() }
+		System.getProperty("ex.addr")?.let { addr = it }
+		System.getProperty("ex.port")?.let { port = it.toInt() }
 
-		logger.debug("Listening on ${initEvent.bindAddr}:${initEvent.bindPort}")
+		// 获取事件配置
+		val event: KtorInitEvent = KtorInitEvent(addr, port).dispatchEvent()
+		addr = event.bindAddr
+		port = event.bindPort
 
-		ktorServer = embeddedServer(Netty, port = initEvent.bindPort, host = initEvent.bindAddr) {
+		logger.debug("Listening on ${addr}:${port}")
+
+		ktorServer = embeddedServer(Netty, port = port, host = addr) {
 			// 启动服务器后发布注册事件
 			KtorModuleEvent(this).dispatchEvent()
 		}
 		try {
 			ktorServer.start(true)
 		} catch(e: BindException) {
-			logger.error("Cannot bind to port ${initEvent.bindPort}", e)
+			logger.error("Exception occurred when binding port", e)
 			exitProcess(1)
 		}
-	}
-
-	if(initEvent.newThread) {
-		thread(name = "Ktor", block = ::boostKtor)
-	} else {
-		boostKtor()
 	}
 
 	logger.info("Boosted!")
 }
 
-object ServiceManager {
+internal object ServiceManager {
 
 	private val services: MutableMap<String, BoosterPlugin> = mutableMapOf()
+	private val classToService: MutableMap<Class<out BoosterPlugin>, BoosterPlugin> = mutableMapOf()
 
 	operator fun get(id: String): BoosterPlugin? = services[id]
+	operator fun get(cls: Class<BoosterPlugin>) = classToService[cls]
 
 	fun loadServiceLoader(serviceLoader: ServiceLoader<BoosterPlugin>) {
 		serviceLoader.stream().forEach { provider ->
@@ -83,7 +98,8 @@ object ServiceManager {
 	private fun loadSinglePlugin(provider: ServiceLoader.Provider<BoosterPlugin>) {
 		val plugin = provider.get()
 		if(services.putIfAbsent(plugin.id, plugin) == null) {
-			logger.info("Scanned plugin: ${plugin.id}(${plugin.version})")
+			logger.info("Scanned plugin: ${plugin.id}(${plugin.version}) <${plugin.javaClass.simpleName}>")
+			classToService[plugin.javaClass] = plugin
 		} else {
 			logger.warn("Failed to instantiate plugin ${plugin.id} because of id collision")
 		}

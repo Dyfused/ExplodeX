@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     implementation(project(":booster"))
+    implementation(project(":labyrinth"))
 
     implementation("com.github.Taskeren:brigadierX:1.2.2")
 

@@ -1,4 +1,4 @@
-import explode2.booster.Booster
+import explode2.labyrinth.LabyrinthPlugin
 import java.util.*
 import kotlin.test.Test
 
@@ -8,7 +8,7 @@ internal class TestLabyrinth {
 
 	@Test
 	fun testGenerateGameRecords() {
-		val rec = Booster.labyrinth.gameRecordFactory
+		val rec = LabyrinthPlugin.labyrinth.gameRecordFactory
 
 		repeat(10) {
 			val cid = createNewRandomChartId()
@@ -21,15 +21,16 @@ internal class TestLabyrinth {
 
 	@Test
 	fun testUserCreate() {
-		val u = Booster.labyrinth.gameUserFactory.getGameUserById(uid) ?: Booster.labyrinth.gameUserFactory
-			.createGameUser("oscar", "oscars", uid)
+		val u =
+			LabyrinthPlugin.labyrinth.gameUserFactory.getGameUserById(uid) ?: LabyrinthPlugin.labyrinth.gameUserFactory
+				.createGameUser("oscar", "oscars", uid)
 		println(u)
 	}
 
 	@Test
 	fun testTryGetUsersRValue() {
 		val u = "1c2b86d9-b1f8-423f-9121-84d58dc37ba9"
-		println(Booster.labyrinth.gameUserFactory.getGameUserById(u)!!.calculateR())
+		println(LabyrinthPlugin.labyrinth.gameUserFactory.getGameUserById(u)!!.calculateR())
 	}
 }
 

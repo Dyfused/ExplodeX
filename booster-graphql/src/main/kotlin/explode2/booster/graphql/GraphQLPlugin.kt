@@ -4,6 +4,7 @@ import com.expediagroup.graphql.generator.extensions.print
 import explode2.booster.*
 import explode2.booster.event.KtorInitEvent
 import explode2.booster.event.KtorModuleEvent
+import explode2.labyrinth.LabyrinthPlugin
 import explode2.logging.Colors
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -29,9 +30,9 @@ class GraphQLPlugin : BoosterPlugin {
 		{ mapOf("token" to (it.request.header("x-soudayo") ?: "trash-potato-server")) }
 	)
 
-	override fun onPreInit() {
+	override fun onInit() {
 		// output Labyrinth provider info
-		logger.info("Using Labyrinth: ${Colors.TianYi}${Booster.labyrinth.javaClass.canonicalName}")
+		logger.info("Using Labyrinth: ${Colors.TianYi}${LabyrinthPlugin.labyrinth.javaClass.canonicalName}")
 
 		// output Maze provider info
 		logger.info("Using Maze: ${Colors.TianYi}${MazeProvider.getProvider().javaClass.canonicalName}")
@@ -41,9 +42,7 @@ class GraphQLPlugin : BoosterPlugin {
 	}
 
 	@Subscribe(threadMode = ThreadMode.MAIN)
-	fun onKtorInit(e: KtorInitEvent) {
-		logger.info("Validating Ktor address binding")
-		e.newThread = false
+	fun onKtorInit(ignored: KtorInitEvent) {
 	}
 
 	@Subscribe

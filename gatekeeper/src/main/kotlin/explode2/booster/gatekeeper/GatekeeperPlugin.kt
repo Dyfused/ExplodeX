@@ -3,9 +3,9 @@ package explode2.booster.gatekeeper
 import cn.taskeren.brigadierx.*
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.exceptions.CommandSyntaxException
-import explode2.booster.Booster.labyrinth
 import explode2.booster.BoosterPlugin
 import explode2.booster.gatekeeper.command.exampleModule
+import explode2.labyrinth.LabyrinthPlugin
 import net.minecrell.terminalconsole.SimpleTerminalConsole
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -45,7 +45,7 @@ class GatekeeperPlugin : BoosterPlugin {
 
 				register("labyrinth") {
 					executesX {
-						logger.info("Labyrinth: ${explode2.booster.Booster.labyrinth.javaClass.canonicalName}")
+						logger.info("Labyrinth: ${LabyrinthPlugin.labyrinth.javaClass.canonicalName}")
 					}
 				}
 

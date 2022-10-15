@@ -2,16 +2,15 @@ package explode2.booster.gatekeeper.command
 
 import cn.taskeren.brigadierx.*
 import com.mojang.brigadier.CommandDispatcher
-import explode2.booster.Booster.labyrinth
 import explode2.booster.gatekeeper.GatekeeperSource
 import explode2.booster.gatekeeper.logger
-import explode2.gateau.Assessment
 import explode2.gateau.SongState
+import explode2.labyrinth.LabyrinthPlugin
 
 fun CommandDispatcher<GatekeeperSource>.exampleModule() = register("example") {
 	literal("user") {
 		executesX {
-			val u = labyrinth.gameUserFactory.createGameUser("Taskeren", "123456")
+			val u = LabyrinthPlugin.labyrinth.gameUserFactory.createGameUser("Taskeren", "123456")
 			logger.info("Added new user Taskeren, id ${u.id}")
 			logger.debug("$u")
 		}
@@ -19,10 +18,10 @@ fun CommandDispatcher<GatekeeperSource>.exampleModule() = register("example") {
 
 	literal("song") {
 		executesX {
-			val c = labyrinth.songChartFactory.createSongChart(5, 15)
+			val c = LabyrinthPlugin.labyrinth.songChartFactory.createSongChart(5, 15)
 			logger.info("Created chart ${c.id}")
 			logger.debug("$c")
-			val s = labyrinth.songSetFactory.createSongSet(
+			val s = LabyrinthPlugin.labyrinth.songSetFactory.createSongSet(
 				"TestMusic",
 				"Me",
 				"",
@@ -38,10 +37,10 @@ fun CommandDispatcher<GatekeeperSource>.exampleModule() = register("example") {
 	literal("assessment") {
 		executesX {
 			val sets = List(4) {
-				val c = labyrinth.songChartFactory.createSongChart(5, 15)
+				val c = LabyrinthPlugin.labyrinth.songChartFactory.createSongChart(5, 15)
 				logger.info("Created chart ${c.id}")
 				logger.debug("$c")
-				val s = labyrinth.songSetFactory.createSongSet(
+				val s = LabyrinthPlugin.labyrinth.songSetFactory.createSongSet(
 					"TestMusic",
 					"Me",
 					"",
@@ -54,7 +53,7 @@ fun CommandDispatcher<GatekeeperSource>.exampleModule() = register("example") {
 				c
 			}
 
-			labyrinth.assessmentInfoFactory.getAssessmentGroups()[0].setAssessmentForMedal(
+			LabyrinthPlugin.labyrinth.assessmentInfoFactory.getAssessmentGroups()[0].setAssessmentForMedal(
 				1,
 				100.0,
 				175.0,
@@ -62,7 +61,7 @@ fun CommandDispatcher<GatekeeperSource>.exampleModule() = register("example") {
 				0.0,
 				sets.map { it.id })
 
-			val ass = labyrinth.assessmentInfoFactory.getAssessmentGroups()[0].getAssessmentForMedal(1)!!
+			val ass = LabyrinthPlugin.labyrinth.assessmentInfoFactory.getAssessmentGroups()[0].getAssessmentForMedal(1)!!
 			logger.debug("$ass")
 			logger.info("Created Assessment for level ${ass.id}, with ${ass.assessmentChartIds.size} charts inside")
 		}

@@ -2,13 +2,12 @@ package explode2.booster.graphql
 
 import com.google.common.cache.CacheBuilder
 import explode2.booster.Booster.dispatchEvent
-import explode2.booster.Booster.labyrinth
 import explode2.booster.graphql.NonNegativeInt.Companion.int
 import explode2.booster.graphql.definition.*
 import explode2.booster.graphql.event.*
 import explode2.gateau.*
-import explode2.labyrinth.SearchCategory
-import explode2.labyrinth.SearchSort
+import explode2.labyrinth.*
+import explode2.labyrinth.LabyrinthPlugin.Companion.labyrinth
 import graphql.schema.DataFetchingEnvironment
 import thirdparty.goodbird.GoodBirdOracle
 import java.time.OffsetDateTime
@@ -79,8 +78,9 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		env: DataFetchingEnvironment, assessmentGroupId: String?, medalLevel: Int?
 	): BeforePlaySubmitModel {
 		val u = env.getUser().baah("invalid user token")
-		val assessment = labyrinth.assessmentInfoFactory.getAssessmentGroupById(assessmentGroupId.baah())
-			.baah("Invalid assessment group!").getAssessmentForMedal(medalLevel.baah()).baah("Invalid medal level!")
+		val assessment =
+			labyrinth.assessmentInfoFactory.getAssessmentGroupById(assessmentGroupId.baah())
+				.baah("Invalid assessment group!").getAssessmentForMedal(medalLevel.baah()).baah("Invalid medal level!")
 
 		val rid = generateUUID()
 
@@ -122,7 +122,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		env: DataFetchingEnvironment, chartId: String?, PPCost: Int?, eventArgs: String?
 	): BeforePlaySubmitModel {
 		val u = env.getUser().baah("invalid user token")
-		val c = labyrinth.songChartFactory.getSongChartById(chartId.baah("invalid chart id")).baah("invalid chart")
+		val c = labyrinth.songChartFactory.getSongChartById(chartId.baah("invalid chart id"))
+			.baah("invalid chart")
 
 		val rid = generateUUID()
 
@@ -147,7 +148,15 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 
 		u.coin += c.d?.let { GoodBirdOracle.calculateCoin(accuracy, it) } ?: 10
 
-		labyrinth.gameRecordFactory.createGameRecord(c.id, u.id, perfect.baah(), good.baah(), miss.baah(), score.baah(), r)
+		labyrinth.gameRecordFactory.createGameRecord(
+			c.id,
+			u.id,
+			perfect.baah(),
+			good.baah(),
+			miss.baah(),
+			score.baah(),
+			r
+		)
 		val record = labyrinth.gameRecordFactory.getPlayerBestChartRecord(c.id, u.id).baah()
 
 		AfterPlayEvent(u, c, record).dispatchEvent()
@@ -201,7 +210,13 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 			else -> boom("invalid ordering")
 		}
 
-		return labyrinth.songSetFactory.searchSongSets(musicTitle, cate, sort, limit.int ?: 9, skip.int ?: 0)
+		return labyrinth.songSetFactory.searchSongSets(
+			musicTitle,
+			cate,
+			sort,
+			limit.int ?: 9,
+			skip.int ?: 0
+		)
 			.map { it.tunerize(u) }
 	}
 
@@ -239,7 +254,11 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		env: DataFetchingEnvironment, chartId: String?, skip: NonNegativeInt?, limit: NonNegativeInt?
 	): List<PlayRecordWithRankModel> {
 		return labyrinth.gameRecordFactory
-			.getChartRecords(chartId.baah("invalid chart id"), limit.int.baah("invalid limit"), skip.int.baah("invalid skip"))
+			.getChartRecords(
+				chartId.baah("invalid chart id"),
+				limit.int.baah("invalid limit"),
+				skip.int.baah("invalid skip")
+			)
 			.map(GameRecord::tunerize)
 	}
 

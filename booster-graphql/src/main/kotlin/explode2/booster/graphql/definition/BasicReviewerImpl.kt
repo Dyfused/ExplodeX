@@ -1,10 +1,7 @@
 package explode2.booster.graphql.definition
 
-import explode2.booster.Booster
 import explode2.booster.graphql.*
-import explode2.booster.graphql.getUser
-import explode2.labyrinth.SearchCategory
-import explode2.labyrinth.SearchSort
+import explode2.labyrinth.*
 import graphql.schema.DataFetchingEnvironment
 
 object BasicReviewerImpl : Reviewer {
@@ -19,7 +16,7 @@ object BasicReviewerImpl : Reviewer {
 		if(!u.isReviewer) {
 			return emptyList()
 		}
-		return Booster.labyrinth.songSetFactory
+		return LabyrinthPlugin.labyrinth.songSetFactory
 			.searchSongSets(
 				searchStr,
 				SearchCategory.REVIEW,

@@ -1,7 +1,7 @@
 package explode2.booster
 
-import com.electronwill.nightconfig.core.file.FileConfig
-import kotlin.io.path.Path
+import com.github.taskeren.config.Configuration
+import java.io.File
 
 interface BoosterPlugin {
 	val id: String
@@ -16,5 +16,9 @@ fun <T> T.subscribeEvents() {
 	Booster.eventbus.register(this)
 }
 
-val BoosterPlugin.config: FileConfig
-	get() = FileConfig.builder(Path("$id.config.toml")).autoreload().autosave().charset(Charsets.UTF_8).build()
+val BoosterPlugin.config: Configuration
+	get() = Configuration(File("$id.config.toml"))
+
+@Suppress("UNCHECKED_CAST")
+val <T: BoosterPlugin> Class<T>.instance get(): T? =
+	ServiceManager[this as Class<BoosterPlugin>] as T

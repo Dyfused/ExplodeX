@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     api(project(":gateau"))
+    api(project(":booster"))
 }
 
 tasks.getByName<Test>("test") {

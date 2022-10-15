@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     api(project(":booster"))
+    api(project(":labyrinth"))
 
     // graphql
     api("com.expediagroup:graphql-kotlin-server:6.2.5")

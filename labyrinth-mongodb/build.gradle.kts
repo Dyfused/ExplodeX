@@ -14,8 +14,6 @@ dependencies {
     implementation(project(":booster"))
     api("org.litote.kmongo:kmongo-native:4.7.1")
 
-    implementation("com.electronwill.night-config:toml:3.6.6")
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }

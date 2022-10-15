@@ -1,9 +1,9 @@
 package explode2.booster.resource
 
-import explode2.booster.Booster.labyrinth
 import explode2.booster.BoosterPlugin
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.subscribeEvents
+import explode2.labyrinth.LabyrinthPlugin
 import explode2.logging.Colors
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -53,7 +53,7 @@ class ResourcePlugin : BoosterPlugin {
 					}
 					get("/chart/encoded/{cid}") {
 						val cid = call.parameters["cid"] ?: return@get invalidResp()
-						val sid = labyrinth.songSetFactory.getSongSetByChart(cid)?.id ?: return@get invalidResp("Invalid Binding Set")
+						val sid = LabyrinthPlugin.labyrinth.songSetFactory.getSongSetByChart(cid)?.id ?: return@get invalidResp("Invalid Binding Set")
 						call.respondBytes(srv.getChartXML(cid, sid))
 					}
 					get("/cover/480x270_jpg/{sid}") {

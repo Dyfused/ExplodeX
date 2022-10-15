@@ -1,22 +1,18 @@
 package explode2.labyrinth.mongo
 
-import com.electronwill.nightconfig.core.file.FileConfig
+import explode2.booster.config
+import explode2.booster.instance
 import explode2.labyrinth.*
-import kotlin.io.path.Path
 
 class LabyrinthMongoProvider : LabyrinthProvider {
 
 	private val provider: MongoManager
 
 	init {
-		val config = FileConfig.builder(Path("labyrinth.mongodb.config.toml"))
-			.autosave()
-			.autoreload()
-			.charset(Charsets.UTF_8)
-			.build()
-
-		val connString = config.getOrElse("connection-string", "mongodb://localhost:27017")
-		val databaseName = config.getOrElse("database-name", "Explode")
+		val config = LabyrinthPlugin::class.java.instance!!.config
+		val connString = config.getString("connection-string", "mongodb", "mongodb://localhost:27017", "数据库地址")
+		val databaseName = config.getString("database-name", "mongodb", "Explode", "数据库名称")
+		config.save()
 
 		provider = MongoManager(LabyrinthMongoBuilder(connString, databaseName))
 	}

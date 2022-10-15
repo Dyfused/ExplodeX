@@ -1,7 +1,8 @@
 package explode2.labyrinth
 
-import java.util.*
-
+/**
+ * @see LabyrinthPlugin
+ */
 interface LabyrinthProvider {
 
 	val gameUserFactory: GameUserFactory
@@ -10,14 +11,4 @@ interface LabyrinthProvider {
 	val assessmentInfoFactory: AssessmentInfoFactory
 	val gameRecordFactory: GameRecordFactory
 	val assessmentRecordFactory: AssessmentRecordFactory
-
-	companion object {
-
-		private val providerCache: LabyrinthProvider by lazy {
-			ServiceLoader.load(LabyrinthProvider::class.java).findFirst().get()
-		}
-
-		fun getProvider(): LabyrinthProvider = providerCache
-	}
-
 }
