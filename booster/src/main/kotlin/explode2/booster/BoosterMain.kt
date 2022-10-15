@@ -4,13 +4,12 @@ import explode2.booster.Booster.dispatchEvent
 import explode2.booster.event.KtorInitEvent
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.util.forEachExceptional
-import explode2.booster.util.mapExceptional
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.slf4j.LoggerFactory
+import java.net.BindException
 import java.util.*
 import kotlin.concurrent.thread
-import kotlin.streams.asSequence
 import kotlin.system.exitProcess
 
 internal val logger = LoggerFactory.getLogger("Booster")
@@ -38,11 +37,22 @@ fun main() {
 	val initEvent: KtorInitEvent = KtorInitEvent().dispatchEvent()
 
 	fun boostKtor() {
+		// 系统配置覆写
+		System.getProperty("ex.addr")?.let { initEvent.bindAddr = it }
+		System.getProperty("ex.port")?.let { initEvent.bindPort = it.toInt() }
+
+		logger.debug("Listening on ${initEvent.bindAddr}:${initEvent.bindPort}")
+
 		ktorServer = embeddedServer(Netty, port = initEvent.bindPort, host = initEvent.bindAddr) {
 			// 启动服务器后发布注册事件
 			KtorModuleEvent(this).dispatchEvent()
 		}
-		ktorServer.start(true)
+		try {
+			ktorServer.start(true)
+		} catch(e: BindException) {
+			logger.error("Cannot bind to port ${initEvent.bindPort}", e)
+			exitProcess(1)
+		}
 	}
 
 	if(initEvent.newThread) {
