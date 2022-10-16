@@ -10,7 +10,7 @@ import java.util.logging.Level
 
 object Booster {
 
-	val config = Configuration(File("explode.config.toml"))
+	val config = Configuration(File("explode.cfg"))
 
 	val eventbus: EventBus = EventBus.builder()
 		.logger(object : org.greenrobot.eventbus.Logger {

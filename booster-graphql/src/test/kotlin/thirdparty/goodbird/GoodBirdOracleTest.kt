@@ -22,7 +22,7 @@ internal class GoodBirdOracleTest {
 		val acc = //0.9626344086021505
 			GoodBirdOracle.calculateAccuracy(perf, good, miss)
 
-		val rank = GoodBirdOracle.calculateRank(acc, 15.2).toInt()
+		val rank = GoodBirdOracle.calculateRank(acc, 15.2)
 		require(rank == 551)
 	}
 

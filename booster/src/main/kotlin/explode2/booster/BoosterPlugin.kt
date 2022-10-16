@@ -17,7 +17,7 @@ fun <T> T.subscribeEvents() {
 }
 
 val BoosterPlugin.config: Configuration
-	get() = Configuration(File("$id.config.toml"))
+	get() = Configuration(File("$id.cfg"))
 
 @Suppress("UNCHECKED_CAST")
 val <T: BoosterPlugin> Class<T>.instance get(): T? =

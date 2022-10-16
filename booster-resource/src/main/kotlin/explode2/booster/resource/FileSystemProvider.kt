@@ -5,7 +5,7 @@ import explode2.labyrinth.event.SongCreatedEvent
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
 
-class FileSystemProvider(private val root: File) : ResourceProvider {
+class FileSystemProvider(private val root: File) : SimpleResourceProvider {
 
 	init {
 		root.mkdirs()

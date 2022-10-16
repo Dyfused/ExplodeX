@@ -2,6 +2,7 @@ package explode2.booster.graphql.proxy
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.slf4j.LoggerFactory
 import java.io.File
 
 class RemoteContextCache(private val file: File, private val original: MutableMap<String, RemoteContext> = mutableMapOf()) :
@@ -15,8 +16,15 @@ class RemoteContextCache(private val file: File, private val original: MutableMa
 		return original.remove(key).saveThis()
 	}
 
+	private val logger = LoggerFactory.getLogger("RemoteCtxCache")
+
 	init {
-		readThis()
+		try {
+			readThis()
+		} catch(e: Exception) {
+			logger.warn("Broken cache loaded and discarded", e)
+			file.delete()
+		}
 	}
 
 	fun load() {

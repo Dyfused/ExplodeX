@@ -7,6 +7,7 @@ import explode2.labyrinth.LabyrinthPlugin
 import explode2.logging.Colors
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
@@ -20,7 +21,7 @@ internal val logger = LoggerFactory.getLogger("Resource")
 class ResourcePlugin : BoosterPlugin {
 
 	override val id: String = "resource"
-	override val version: String = "1.0"
+	override val version: String = "1.0.0"
 
 	override fun onPreInit() {
 		subscribeEvents()
@@ -28,7 +29,8 @@ class ResourcePlugin : BoosterPlugin {
 
 	@Subscribe
 	fun registerKtor(e: KtorModuleEvent) {
-		val srv = ServiceLoader.load(ResourceProvider::class.java).findFirst().orElseGet { FileSystemProvider(File(".explode_data")) }
+		val srv = ServiceLoader.load(ResourceProvider::class.java).findFirst()
+			.orElseGet { FileSystemProvider(File(".explode_data")) }
 		logger.info("Using Resource: ${Colors.TianYi}${srv.javaClass.canonicalName}")
 
 		logger.info("Configuring Ktor")
@@ -41,28 +43,59 @@ class ResourcePlugin : BoosterPlugin {
 				route("download") {
 					get("/music/encoded/{sid}") {
 						val sid = call.parameters["sid"] ?: return@get invalidResp()
-						call.respondBytes(srv.getMusic(sid))
+						val token = call.request.header("x-soudayo")
+
+						when(srv) {
+							is RedirectResourceProvider -> call.respondRedirect(srv.getMusic(sid, token))
+							is ByteArrayResourceProvider -> call.respondBytes(srv.getMusic(sid, token))
+						}
 					}
 					get("/preview/encoded/{sid}") {
 						val sid = call.parameters["sid"] ?: return@get invalidResp()
-						call.respondBytes(srv.getPreviewMusic(sid))
+						val token = call.request.header("x-soudayo")
+
+						when(srv) {
+							is RedirectResourceProvider -> call.respondRedirect(srv.getPreviewMusic(sid, token))
+							is ByteArrayResourceProvider -> call.respondBytes(srv.getPreviewMusic(sid, token))
+						}
 					}
 					get("/cover/encoded/{sid}") {
 						val sid = call.parameters["sid"] ?: return@get invalidResp()
-						call.respondBytes(srv.getCoverPicture(sid))
+						val token = call.request.header("x-soudayo")
+
+						when(srv) {
+							is RedirectResourceProvider -> call.respondRedirect(srv.getCoverPicture(sid, token))
+							is ByteArrayResourceProvider -> call.respondBytes(srv.getCoverPicture(sid, token))
+						}
 					}
 					get("/chart/encoded/{cid}") {
 						val cid = call.parameters["cid"] ?: return@get invalidResp()
-						val sid = LabyrinthPlugin.labyrinth.songSetFactory.getSongSetByChart(cid)?.id ?: return@get invalidResp("Invalid Binding Set")
-						call.respondBytes(srv.getChartXML(cid, sid))
+						val sid = LabyrinthPlugin.labyrinth.songSetFactory.getSongSetByChart(cid)?.id
+							?: return@get invalidResp("Invalid binding set")
+						val token = call.request.header("x-soudayo")
+
+						when(srv) {
+							is RedirectResourceProvider -> call.respondRedirect(srv.getChartXML(cid, sid, token))
+							is ByteArrayResourceProvider -> call.respondBytes(srv.getChartXML(cid, sid, token))
+						}
 					}
 					get("/cover/480x270_jpg/{sid}") {
 						val sid = call.parameters["sid"] ?: return@get invalidResp()
-						call.respondBytes(srv.getStoreCoverPicture(sid))
+						val token = call.request.header("x-soudayo")
+
+						when(srv) {
+							is RedirectResourceProvider -> call.respondRedirect(srv.getStoreCoverPicture(sid, token))
+							is ByteArrayResourceProvider -> call.respondBytes(srv.getStoreCoverPicture(sid, token))
+						}
 					}
 					get("/avatar/256x256_jpg/{uid}") {
 						val uid = call.parameters["uid"] ?: return@get invalidResp()
-						call.respondBytes(srv.getUserAvatar(uid))
+						val token = call.request.header("x-soudayo")
+
+						when(srv) {
+							is RedirectResourceProvider -> call.respondRedirect(srv.getUserAvatar(uid, token))
+							is ByteArrayResourceProvider -> call.respondBytes(srv.getUserAvatar(uid, token))
+						}
 					}
 				}
 			}

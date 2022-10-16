@@ -1,8 +1,8 @@
 package explode2.booster.graphql.proxy
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.taskeren.config.Configuration
 import explode2.booster.graphql.NonNegativeInt
 import explode2.booster.graphql.definition.*
 import explode2.simplegql.*
@@ -18,8 +18,19 @@ object ProxyMaze : ExplodeQuery, ExplodeMutation {
 
 	private val linkedServer = RemoteContextCache(File(".proxy_cache"))
 
+	private val config = Configuration(File("proxy_maze.cfg"))
+
 	private val DataFetchingEnvironment.uid: String
 		get() = graphQlContext.getOrEmpty<String>("token").orElseThrow(::IllegalStateException)
+
+	private val blacklistServers =
+		config.getStringList("blacklist-servers", "general", arrayOf("(?i)https?://127.0.0.1"), "服务器黑名单").map { it.toRegex() }
+
+	init {
+		config.save()
+	}
+
+	fun getResourceLink(uid: String) = linkedServer[uid]?.remoteResource
 
 	/**
 	 * 将请求发送到用户对应的服务器
@@ -35,12 +46,17 @@ object ProxyMaze : ExplodeQuery, ExplodeMutation {
 		require(!username.isNullOrBlank())
 		require(!password.isNullOrBlank())
 
+		// validate remote
+		blacklistServers.forEach { if(it.matches(username)) error("The remote server is on the blacklist") }
+
 		val auth = password.split(":", limit = 3)
 		val uid = auth[0] // unique id for this server
 		val usr = auth[1]
 		val pwd = auth[2]
 
-		linkedServer[uid] = RemoteContext(username, null)
+		val resourceLink = username.removeSuffix("/graphql")
+
+		linkedServer[uid] = RemoteContext(username, resourceLink, null)
 
 		val rsp = SingleQuery(
 			"""

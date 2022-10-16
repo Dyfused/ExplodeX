@@ -1,9 +1,9 @@
 package explode2.booster.graphql
 
 import com.expediagroup.graphql.generator.extensions.print
-import explode2.booster.*
-import explode2.booster.event.KtorInitEvent
+import explode2.booster.BoosterPlugin
 import explode2.booster.event.KtorModuleEvent
+import explode2.booster.subscribeEvents
 import explode2.labyrinth.LabyrinthPlugin
 import explode2.logging.Colors
 import io.ktor.http.*
@@ -12,7 +12,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -39,10 +38,6 @@ class GraphQLPlugin : BoosterPlugin {
 
 		// register subscriber
 		subscribeEvents()
-	}
-
-	@Subscribe(threadMode = ThreadMode.MAIN)
-	fun onKtorInit(ignored: KtorInitEvent) {
 	}
 
 	@Subscribe
