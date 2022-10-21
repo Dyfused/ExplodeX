@@ -4,4 +4,4 @@ build
 logs
 out
 
-*.config.toml
+*.cfg
