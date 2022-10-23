@@ -94,12 +94,16 @@ internal val userModule: RouteConfigure = {
 		patch("username") {
 			val uid = bombCall.parameters.getOrFail("id")
 
-			data class ChangeUsernamePayload(val oldUsername: String, val newUsername: String)
+			data class ChangeUsernamePayload(val password: String, val newUsername: String)
 
 			val payload = bombCall.receive<ChangeUsernamePayload>()
 			val user = labyrinth.gameUserFactory.getGameUserById(uid)
 				?: return@patch bombCall.respondError(toError(Localization.UserNotFound))
 
+			// 检查密码
+			if(!user.validatePassword(payload.password)) return@patch bombCall.respondError(toError(Localization.UserLoginFailed))
+
+			// 检查重名
 			if(labyrinth.gameUserFactory.getGameUserByName(payload.newUsername) == null) {
 				user.username = payload.newUsername
 				bombCall.respondData(user.toBO().toData())
