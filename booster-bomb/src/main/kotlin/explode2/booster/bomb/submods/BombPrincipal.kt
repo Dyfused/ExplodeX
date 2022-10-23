@@ -2,8 +2,7 @@ package explode2.booster.bomb.submods
 
 import explode2.booster.bomb.logger
 import explode2.booster.bomb.superstarMarker
-import explode2.gateau.GameUser
-import explode2.gateau.SongSet
+import explode2.gateau.*
 import io.ktor.server.auth.*
 import java.time.OffsetDateTime
 
@@ -35,5 +34,7 @@ object SuperstarPrincipal : BombPrincipal {
 		override fun giveSet(setId: String) {
 			logger.warn(superstarMarker, "Unexpected \"giveSet($setId)\" has been invoked!")
 		}
+		override fun calculateLastRecords(limit: Int): List<GameRecord> = emptyList()
+		override fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord> = emptyList()
 	}
 }
