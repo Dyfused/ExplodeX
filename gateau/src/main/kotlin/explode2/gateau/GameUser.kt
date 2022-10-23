@@ -27,4 +27,7 @@ interface GameUser {
 	fun validatePassword(password: String): Boolean
 
 	fun giveSet(setId: String)
+
+	fun calculateLastRecords(limit: Int): List<GameRecord>
+	fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord>
 }

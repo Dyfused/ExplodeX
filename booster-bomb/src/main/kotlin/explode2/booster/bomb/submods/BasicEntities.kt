@@ -21,5 +21,5 @@ data class Error(
 fun Throwable.toError(message: String? = null, success: Boolean = false) =
 	Error(success, message ?: this.message, stackTraceToString())
 
-fun toError(message: String, success: Boolean = false) =
-	Error(success, message, Exception().stackTraceToString())
+fun toError(message: String, success: Boolean = false, needStackTrace: Boolean = false) =
+	Error(success, message, if(needStackTrace) Exception().stackTraceToString() else null)
