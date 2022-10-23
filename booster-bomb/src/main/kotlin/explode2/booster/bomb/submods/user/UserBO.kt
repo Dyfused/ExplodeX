@@ -3,7 +3,7 @@ package explode2.booster.bomb.submods.user
 import explode2.gateau.GameUser
 import java.time.format.DateTimeFormatter
 
-data class UserBO(
+internal data class UserBO(
 	val id: String,
 	val username: String,
 	val coin: Int,

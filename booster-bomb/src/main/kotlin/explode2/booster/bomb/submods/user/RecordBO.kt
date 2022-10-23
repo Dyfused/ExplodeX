@@ -3,7 +3,7 @@ package explode2.booster.bomb.submods.user
 import explode2.gateau.GameRecord
 import java.time.format.DateTimeFormatter
 
-data class RecordBO(
+internal data class RecordBO(
 	val id: String,
 	val player_id: String,
 	val chart_id: String,
@@ -16,7 +16,7 @@ data class RecordBO(
 	val ranking: Int?,
 )
 
-fun GameRecord.toBO() =
+internal fun GameRecord.toBO() =
 	RecordBO(
 		id,
 		playerId, playedChartId,
