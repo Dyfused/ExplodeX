@@ -546,6 +546,28 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val ownedSets: List<SongSet>
 			get() = delegate.ownedSongSetIds.mapNotNull(::getSongSetById)
 
+		override fun calculateLastRecords(limit: Int): List<GameRecord> {
+			return collGameRec.aggregate<MongoGameRecord>(
+				match(MongoGameRecord::playerId eq id),
+				sort(descending(MongoGameRecord::uploadTime)),
+				limit(limit)
+			).toList().map(::GameRecordWrap)
+		}
+
+		override fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord> {
+			data class MiddleObject(val data: Any)
+
+			val sortingField = if(sortedBy == ScoreOrRanking.Ranking) MongoGameRecord::r else MongoGameRecord::score
+
+			return collGameRec.aggregate<MongoGameRecord>(
+				match(MongoGameRecord::playerId eq id),
+				sort(descending(MongoGameRecord::playedChartId, sortingField, MongoGameRecord::uploadTime)),
+				group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
+				Aggregates.replaceWith(MiddleObject::data),
+				limit(limit)
+			).toList().map(::GameRecordWrap)
+		}
+
 		override fun toString(): String = delegate.toString()
 	}
 

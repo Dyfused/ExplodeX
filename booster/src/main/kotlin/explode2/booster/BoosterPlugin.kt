@@ -19,6 +19,9 @@ fun <T> T.subscribeEvents() {
 val BoosterPlugin.config: Configuration
 	get() = Configuration(File("$id.cfg"))
 
+fun BoosterPlugin.saveConfig() =
+	config.save()
+
 @Suppress("UNCHECKED_CAST")
 val <T: BoosterPlugin> Class<T>.instance get(): T? =
 	ServiceManager[this as Class<BoosterPlugin>] as T
