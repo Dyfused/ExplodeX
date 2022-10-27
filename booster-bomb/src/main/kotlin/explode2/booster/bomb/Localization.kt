@@ -12,4 +12,6 @@ object Localization {
 
 	const val UserLoginFailed = "USER_LOGIN_FAILED"
 
+	const val ResourceNotFound = "RESOURCE_NOT_FOUND"
+
 }

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package explode2.gateau
 
 interface SongState {
@@ -24,6 +26,9 @@ interface SongState {
 		fun ofRanked() = BasicSongState(Ranked)
 		fun ofUnRanked() = BasicSongState(UnRanked)
 		fun ofOfficial() = BasicSongState(Official)
+
+		fun of(category: Int, hidden: Boolean, reviewing: Boolean) =
+			BasicSongState(category, hidden, reviewing)
 	}
 
 	class BasicSongState(

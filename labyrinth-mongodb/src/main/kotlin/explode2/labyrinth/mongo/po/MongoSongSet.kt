@@ -14,6 +14,13 @@ data class MongoSongSet(
 	val noterUserId: String?,
 	val chartIds: List<String>,
 	val publishTime: OffsetDateTime,
+	/**
+	 * UnRanked - 0
+	 * Ranked - 1
+	 * Official - 2
+	 *
+	 * @see explode2.gateau.SongState
+	 */
 	val category: Int,
 	val hidden: Boolean,
 	val reviewing: Boolean,

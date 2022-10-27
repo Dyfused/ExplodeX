@@ -4,6 +4,9 @@ import com.google.gson.Gson
 import explode2.booster.*
 import explode2.booster.bomb.submods.*
 import explode2.booster.bomb.submods.basic.WelcomeBO
+import explode2.booster.bomb.submods.chart.chartModule
+import explode2.booster.bomb.submods.chart.setModule
+import explode2.booster.bomb.submods.extra.newSongModule
 import explode2.booster.bomb.submods.user.userModule
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.event.RouteConfigure
@@ -134,6 +137,12 @@ private val bombModule: RouteConfigure = {
 	// 用户接口模块
 	logger.debug(configureMarker, "[Module]: User")
 	route("user", userModule)
+	// 曲目接口模块
+	route("set", setModule)
+	// 谱面接口模块
+	route("chart", chartModule)
+	// 上传接口模块
+	route("upload", newSongModule)
 
 }
 
