@@ -28,7 +28,7 @@ import org.slf4j.MarkerFactory
 import java.lang.reflect.Type
 import java.util.UUID
 
-const val BombApiVersion = 0
+const val BombApiVersion = 2 // 0 和 1 在 Explode-Kotlin 里，反正都是异坨屎
 const val BombApiVersionPatch = 0
 
 internal val logger = LoggerFactory.getLogger("Bomb")
