@@ -10,8 +10,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":booster"))
-    api(project(":labyrinth"))
+    implementation(project(":booster-resource"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")

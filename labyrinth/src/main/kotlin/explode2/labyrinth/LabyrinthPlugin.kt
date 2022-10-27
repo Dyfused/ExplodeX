@@ -1,8 +1,6 @@
 package explode2.labyrinth
 
-import explode2.booster.BoosterPlugin
-import explode2.booster.instance
-import java.util.*
+import explode2.booster.*
 
 class LabyrinthPlugin : BoosterPlugin {
 
@@ -14,7 +12,7 @@ class LabyrinthPlugin : BoosterPlugin {
 	}
 
 	private val providerCache: LabyrinthProvider by lazy {
-		ServiceLoader.load(LabyrinthProvider::class.java).findFirst().get()
+		ExplodeService.load<LabyrinthProvider>().findFirst().get()
 	}
 
 	companion object {

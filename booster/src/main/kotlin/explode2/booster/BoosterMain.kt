@@ -26,19 +26,19 @@ fun main() {
 	}
 
 	// 加载插件
-	ServiceManager.load()
+	ExplodeService.loadBooster()
 
 	// 检查插件数量，为零直接退出
-	ServiceManager.validateStatus()
+	ExplodeService.validateStatus()
 
 	logger.info("Pre-initializing plugins")
-	ServiceManager.dispatchPreInit()
+	ExplodeService.dispatchPreInit()
 
 	logger.info("Initializing plugins")
-	ServiceManager.dispatchInit()
+	ExplodeService.dispatchInit()
 
 	logger.info("Post-initializing plugins")
-	ServiceManager.dispatchPostInit()
+	ExplodeService.dispatchPostInit()
 
 	// 启动服务器线程
 	thread(name = "ktor") {
@@ -76,7 +76,7 @@ fun main() {
 	logger.info("Boosted!")
 }
 
-internal object ServiceManager {
+object ExplodeService {
 
 	private val services: MutableMap<String, BoosterPlugin> = mutableMapOf()
 	private val classToService: MutableMap<Class<out BoosterPlugin>, BoosterPlugin> = mutableMapOf()
@@ -84,11 +84,19 @@ internal object ServiceManager {
 	operator fun get(id: String): BoosterPlugin? = services[id]
 	operator fun get(cls: Class<BoosterPlugin>) = classToService[cls]
 
-	fun load() {
-		loadServiceLoader(ServiceLoader.load(BoosterPlugin::class.java, loadExternalJars()))
+	private val PluginFolder = File("./plugins/").also { it.mkdirs() }
+
+	val ExternalClassLoader = loadExternalJars()
+
+	fun loadBooster() {
+		loadPlugins(load())
 	}
 
-	private fun loadServiceLoader(serviceLoader: ServiceLoader<BoosterPlugin>) {
+	inline fun <reified T> load(): ServiceLoader<T> {
+		return ServiceLoader.load(T::class.java, ExternalClassLoader)
+	}
+
+	private fun loadPlugins(serviceLoader: ServiceLoader<BoosterPlugin>) {
 		serviceLoader.stream().forEach { provider ->
 			runCatching {
 				loadSinglePlugin(provider)
@@ -129,8 +137,6 @@ internal object ServiceManager {
 	}
 
 	/// LOAD EXTERNAL JARS
-
-	private val PluginFolder = File("./plugins/").also { it.mkdirs() }
 
 	private fun loadExternalJars(): JarClassLoader {
 		return JarClassLoader().apply { add(PluginFolder.path) }
