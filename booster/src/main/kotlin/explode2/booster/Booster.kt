@@ -25,10 +25,10 @@ object Booster {
 			}
 
 			override fun log(level: Level, msg: String, th: Throwable) = when(level) {
-				Level.FINER, Level.FINEST -> logger.trace(msg, th)
-				Level.FINE, Level.INFO -> logger.info(msg, th)
-				Level.WARNING -> logger.warn(msg, th)
-				Level.SEVERE -> logger.error(msg, th)
+				Level.FINER, Level.FINEST -> logger.trace(marker, msg, th)
+				Level.FINE, Level.INFO -> logger.info(marker, msg, th)
+				Level.WARNING -> logger.warn(marker, msg, th)
+				Level.SEVERE -> logger.error(marker, msg, th)
 				else -> {}
 			}
 		})

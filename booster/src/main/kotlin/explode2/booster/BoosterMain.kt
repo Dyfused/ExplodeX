@@ -8,15 +8,14 @@ import explode2.booster.util.forEachExceptional
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.slf4j.LoggerFactory
+import org.xeustechnologies.jcl.JarClassLoader
+import java.io.File
 import java.net.BindException
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 internal val logger = LoggerFactory.getLogger("Booster")
-
-private val serviceLoader =
-	ServiceLoader.load(BoosterPlugin::class.java)
 
 lateinit var ktorServer: NettyApplicationEngine private set
 
@@ -27,7 +26,7 @@ fun main() {
 	}
 
 	// 加载插件
-	ServiceManager.loadServiceLoader(serviceLoader)
+	ServiceManager.load()
 
 	// 检查插件数量，为零直接退出
 	ServiceManager.validateStatus()
@@ -85,7 +84,11 @@ internal object ServiceManager {
 	operator fun get(id: String): BoosterPlugin? = services[id]
 	operator fun get(cls: Class<BoosterPlugin>) = classToService[cls]
 
-	fun loadServiceLoader(serviceLoader: ServiceLoader<BoosterPlugin>) {
+	fun load() {
+		loadServiceLoader(ServiceLoader.load(BoosterPlugin::class.java, loadExternalJars()))
+	}
+
+	private fun loadServiceLoader(serviceLoader: ServiceLoader<BoosterPlugin>) {
 		serviceLoader.stream().forEach { provider ->
 			runCatching {
 				loadSinglePlugin(provider)
@@ -123,6 +126,14 @@ internal object ServiceManager {
 
 	fun dispatchPostInit() = services.values.forEachExceptional(BoosterPlugin::onPostInit) { plugin, exception ->
 		logger.error("Exception occurred when post-initializing plugin ${plugin.id}", exception)
+	}
+
+	/// LOAD EXTERNAL JARS
+
+	private val PluginFolder = File("./plugins/").also { it.mkdirs() }
+
+	private fun loadExternalJars(): JarClassLoader {
+		return JarClassLoader().apply { add(PluginFolder.path) }
 	}
 
 }
