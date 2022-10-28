@@ -11,6 +11,7 @@ internal class TestColorOutput {
 	fun testColor() {
 		println(Colors.Miku)
 		logger.info(Colors.Miku +"AAA")
+		logger.warn("Exception", RuntimeException(NullPointerException("NPE")))
 	}
 
 }

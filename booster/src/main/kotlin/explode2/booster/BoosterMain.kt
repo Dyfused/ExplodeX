@@ -8,6 +8,7 @@ import explode2.booster.util.forEachExceptional
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.slf4j.LoggerFactory
+import org.slf4j.MarkerFactory
 import org.xeustechnologies.jcl.JarClassLoader
 import java.io.File
 import java.net.BindException
@@ -78,6 +79,8 @@ fun main() {
 
 object ExplodeService {
 
+	private val servMarker = MarkerFactory.getMarker("ExplodeService")
+
 	private val services: MutableMap<String, BoosterPlugin> = mutableMapOf()
 	private val classToService: MutableMap<Class<out BoosterPlugin>, BoosterPlugin> = mutableMapOf()
 
@@ -101,7 +104,7 @@ object ExplodeService {
 			runCatching {
 				loadSinglePlugin(provider)
 			}.onFailure {
-				logger.error("An exception occurred when loading plugin: ${provider.type().canonicalName}", it)
+				logger.error(servMarker, "An exception occurred when loading plugin: ${provider.type().canonicalName}", it)
 			}
 		}
 	}
@@ -112,28 +115,28 @@ object ExplodeService {
 			logger.info("Scanned plugin: ${plugin.id}(${plugin.version}) <${plugin.javaClass.simpleName}>")
 			classToService[plugin.javaClass] = plugin
 		} else {
-			logger.warn("Failed to instantiate plugin ${plugin.id} because of id collision")
+			logger.warn(servMarker, "Failed to instantiate plugin ${plugin.id} because of id collision")
 		}
 	}
 
 	fun validateStatus() {
 		if(services.isEmpty()) {
-			logger.error("No plugin is found!")
-			logger.error("You need to add at least one plugin to continue")
+			logger.error(servMarker, "No plugin is found!")
+			logger.error(servMarker, "You need to add at least one plugin to continue")
 			exitProcess(0)
 		}
 	}
 
 	fun dispatchPreInit() = services.values.forEachExceptional(BoosterPlugin::onPreInit) { plugin, exception ->
-		logger.error("Exception occurred when pre-initializing plugin ${plugin.id}", exception)
+		logger.error(servMarker, "Exception occurred when pre-initializing plugin ${plugin.id}", exception)
 	}
 
 	fun dispatchInit() = services.values.forEachExceptional(BoosterPlugin::onInit) { plugin, exception ->
-		logger.error("Exception occurred when initializing plugin ${plugin.id}", exception)
+		logger.error(servMarker, "Exception occurred when initializing plugin ${plugin.id}", exception)
 	}
 
 	fun dispatchPostInit() = services.values.forEachExceptional(BoosterPlugin::onPostInit) { plugin, exception ->
-		logger.error("Exception occurred when post-initializing plugin ${plugin.id}", exception)
+		logger.error(servMarker, "Exception occurred when post-initializing plugin ${plugin.id}", exception)
 	}
 
 	/// LOAD EXTERNAL JARS

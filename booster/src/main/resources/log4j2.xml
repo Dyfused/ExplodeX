@@ -8,7 +8,7 @@
         <TerminalConsole name="Console">
             <PatternLayout>
                 <LoggerNamePatternSelector
-                        defaultPattern="%highlightForge{[%d{HH:mm:ss}] [%t/%level] [%c{2.}/%markerSimpleName]: %paperMinecraftFormatting{%msg}%n}">
+                        defaultPattern="%highlightForge{[%d{HH:mm:ss}] [%t/%level] [%c{2.}/%markerSimpleName]: %paperMinecraftFormatting{%msg}%n%xEx}">
                 </LoggerNamePatternSelector>
             </PatternLayout>
         </TerminalConsole>

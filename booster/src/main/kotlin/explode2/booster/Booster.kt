@@ -32,6 +32,9 @@ object Booster {
 				else -> {}
 			}
 		})
+		.sendNoSubscriberEvent(false)
+		.logNoSubscriberMessages(false)
+		.logSubscriberExceptions(false)
 		.build()
 
 	/**
@@ -45,5 +48,9 @@ object Booster {
 	@Suppress("unused")
 	fun stopKtor(graceSec: Long = 5, timeOutSec: Long = graceSec) =
 		ktorServer.stop(graceSec, timeOutSec, TimeUnit.SECONDS)
+
+	init {
+		eventbus.register(BoosterGeneralEventHandler)
+	}
 
 }
