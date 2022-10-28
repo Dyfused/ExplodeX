@@ -187,7 +187,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 	}
 
 	private fun String.isValid(): Boolean {
-		return codePoints().allMatch { UnicodeScript.of(it) !in arrayOf(UnicodeScript.COMMON, UnicodeScript.UNKNOWN) }
+		return codePoints().allMatch { UnicodeScript.of(it) != UnicodeScript.UNKNOWN }
 	}
 
 	override fun createGameUser(username: String, password: String, id: String?): GameUser {
@@ -544,11 +544,11 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		}
 
 		override fun changePassword(password: String) {
+			require(password.isValid()) { "password contains invalid characters" }
 			delegate = updateMongoGameUser(id, delegate.copy(password = password))
 		}
 
 		override fun validatePassword(password: String): Boolean {
-			require(password.isValid()) { "password contains invalid characters" }
 			return password == delegate.password
 		}
 
