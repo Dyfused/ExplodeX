@@ -93,7 +93,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 		var filter: Bson = EMPTY_BSON
 		if(!matchingName.isNullOrBlank()) {
-			filter = and(filter, MongoSongSet::musicName eq matchingName)
+			filter = and(filter, MongoSongSet::musicName.regex(matchingName, "i"))
 		}
 		if(matchingCategory != null) {
 			if(matchingCategory == SearchCategory.HIDDEN) {
@@ -235,8 +235,8 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			group(MongoGameRecord::playerId, Accumulators.first("data", ThisDocument)),
 			Aggregates.replaceWith(MiddleObject<MongoGameRecord>::data),
 			Aggregates.setWindowFields(null, descending(MongoGameRecord::score), WindowOutputFields.rank("ranking")),
-			limit(limit),
-			skip(skip)
+			skip(skip),
+			limit(limit)
 		).map(::GameRecordRankedWrap).toList()
 	}
 
@@ -312,8 +312,8 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			group(MongoAssessRecord::playerId, Accumulators.first("data", ThisDocument)),
 			Aggregates.replaceWith(MiddleObject::data),
 			Aggregates.setWindowFields(null, descending(MiddleObject::sumAccuracy), WindowOutputFields.rank("ranking")),
-			limit(limit),
-			skip(skip)
+			skip(skip),
+			limit(limit)
 		).map(::AssessmentRecordRankedWrap).toList()
 	}
 

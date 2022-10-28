@@ -14,14 +14,14 @@ interface ExplodeQuery : Query {
 
 	suspend fun set(
 		env: DataFetchingEnvironment,
-		playCountOrder: Int?,
-		publishTimeOrder: Int?,
-		limit: NonNegativeInt?,
-		skip: NonNegativeInt?,
-		isHidden: Int?,
-		musicTitle: String?,
-		isOfficial: Int?,
-		isRanked: Int?
+		playCountOrder: Int? = null,
+		publishTimeOrder: Int? = null,
+		limit: NonNegativeInt? = null,
+		skip: NonNegativeInt? = null,
+		isHidden: Int? = null,
+		musicTitle: String? = null,
+		isOfficial: Int? = null,
+		isRanked: Int? = null
 	): List<SetModel>
 
 	suspend fun self(env: DataFetchingEnvironment): Self
