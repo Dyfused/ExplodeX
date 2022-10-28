@@ -534,7 +534,13 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		}
 
 		override fun calculateHighestGoldenMedal(): Int {
-			return 0 // TODO
+			var highest = 0
+			getAssessmentGroups()[0].assessments.sortedBy { it.medalLevel }.forEach {
+				if(it.getBestAssessmentRecordForPlayer(this)?.result == 2) {
+					highest = highest.coerceAtLeast(it.medalLevel)
+				}
+			}
+			return highest
 		}
 
 		override fun changePassword(password: String) {
