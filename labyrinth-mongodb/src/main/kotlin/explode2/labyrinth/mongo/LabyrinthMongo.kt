@@ -836,6 +836,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 	/**
 	 * 直接对数据库进行操作
 	 */
+	@Deprecated("unused")
 	fun unsafe(block: MongoDatabase.() -> Unit) {
 		provider.getDatabase().block()
 	}
