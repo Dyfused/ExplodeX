@@ -98,6 +98,14 @@ class BombPlugin : BoosterPlugin {
 				exception<Throwable> { call, cause ->
 					call.respondError(cause.toError("Uncaught Exception!"))
 				}
+
+				exception<IllegalStateException> { call, cause ->
+					call.respondError(cause.toError(needStackTrace = false))
+				}
+
+				exception<IllegalArgumentException> { call, cause ->
+					call.respondError(cause.toError(needStackTrace = false), HttpStatusCode.BadRequest)
+				}
 			}
 
 			routing {
@@ -163,10 +171,10 @@ internal suspend fun ApplicationCall.respondJson(content: Any?, typeOfSrc: Type?
 	}
 }
 
-internal suspend fun <T> ApplicationCall.respondData(content: Data<T>) {
-	respondJson(content, status = HttpStatusCode.OK)
+internal suspend fun <T> ApplicationCall.respondData(content: Data<T>, status: HttpStatusCode? = null) {
+	respondJson(content, status = status ?: HttpStatusCode.OK)
 }
 
-internal suspend fun ApplicationCall.respondError(content: Error) {
-	respondJson(content, status = HttpStatusCode.InternalServerError)
+internal suspend fun ApplicationCall.respondError(content: Error, status: HttpStatusCode? = null) {
+	respondJson(content, status = status ?: HttpStatusCode.InternalServerError)
 }

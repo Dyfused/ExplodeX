@@ -20,8 +20,8 @@ data class ExceptionContext(val message: String, val exception: Throwable)
 /**
  * 根据 [Throwable] 生成 [Error] 实例
  */
-fun Throwable.toError(message: String? = null, success: Boolean = false) =
-	Error(success, message ?: this.message, stackTraceToString())
+fun Throwable.toError(message: String? = null, success: Boolean = false, needStackTrace: Boolean = true) =
+	Error(success, message ?: this.message, if(needStackTrace) stackTraceToString() else null)
 
 fun toError(message: String, success: Boolean = false, needStackTrace: Boolean = false) =
 	Error(success, message, if(needStackTrace) Exception().stackTraceToString() else null)

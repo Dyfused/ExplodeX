@@ -11,6 +11,7 @@ import explode2.labyrinth.mongo.po.*
 import explode2.labyrinth.mongo.po.aggregated.*
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
+import java.lang.Character.UnicodeScript
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -185,7 +186,14 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		return collUser.findOne(MongoGameUser::username eq username)?.let(::GameUserDelegate)
 	}
 
+	private fun String.isValid(): Boolean {
+		return codePoints().allMatch { UnicodeScript.of(it) !in arrayOf(UnicodeScript.COMMON, UnicodeScript.UNKNOWN) }
+	}
+
 	override fun createGameUser(username: String, password: String, id: String?): GameUser {
+		require(username.isValid()) { "username contains invalid characters" }
+		require(password.isValid()) { "password contains invalid characters" }
+
 		val actualId = id ?: createNewRandomUUID()
 		val u = MongoGameUser(
 			actualId,
@@ -485,6 +493,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override var username: String
 			get() = delegate.username
 			set(value) {
+				require(username.isValid()) { "username contains invalid characters" }
 				delegate = updateMongoGameUser(id, delegate.copy(username = value))
 			}
 		override var coin: Int
@@ -533,6 +542,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		}
 
 		override fun validatePassword(password: String): Boolean {
+			require(password.isValid()) { "password contains invalid characters" }
 			return password == delegate.password
 		}
 
