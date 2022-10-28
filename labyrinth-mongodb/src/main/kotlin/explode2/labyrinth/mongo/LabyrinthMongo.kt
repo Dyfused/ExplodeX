@@ -528,6 +528,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				sort(descending(MongoGameRecord::playedChartId, MongoGameRecord::r, MongoGameRecord::uploadTime)),
 				group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
 				Aggregates.replaceWith(MiddleObject::data),
+				sort(descending(MongoGameRecord::r, MongoGameRecord::uploadTime)),
 				limit(20),
 				group(null, Accumulators.sum("sumAcc", MongoGameRecord::r))
 			).firstOrNull()?.sumAcc?.toInt() ?: 0
@@ -580,6 +581,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				sort(descending(MongoGameRecord::playedChartId, sortingField, MongoGameRecord::uploadTime)),
 				group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
 				Aggregates.replaceWith(MiddleObject::data),
+				sort(descending(sortingField, MongoGameRecord::uploadTime)),
 				limit(limit)
 			).toList().map(::GameRecordWrap)
 		}
