@@ -7,5 +7,5 @@ data class MongoSongChart(
 	val id: String,
 	val difficultyClass: Int,
 	val difficultyValue: Int,
-	val D: Double?
+	val d: Double?
 )

@@ -471,9 +471,9 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				delegate = updateMongoSongChart(id, delegate.copy(difficultyValue = value))
 			}
 		override var d: Double?
-			get() = delegate.D
+			get() = delegate.d
 			set(value) {
-				delegate = updateMongoSongChart(id, delegate.copy(D = value))
+				delegate = updateMongoSongChart(id, delegate.copy(d = value))
 			}
 
 		override fun getRankingRecords(limit: Int, skip: Int): Collection<GameRecord> {
