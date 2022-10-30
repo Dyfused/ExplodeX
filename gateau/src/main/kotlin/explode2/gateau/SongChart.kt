@@ -13,4 +13,6 @@ interface SongChart {
 
 	fun getRankingPlayerRecord(userId: String): GameRecord?
 
+	fun getParentSet(): SongSet
+
 }

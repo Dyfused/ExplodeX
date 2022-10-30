@@ -484,6 +484,10 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			return getPlayerBestChartRecord(id, userId)
 		}
 
+		override fun getParentSet(): SongSet {
+			return getSongSetByChart(id) ?: error("chart parent not found")
+		}
+
 		override fun toString(): String = delegate.toString()
 	}
 
