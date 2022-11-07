@@ -54,6 +54,20 @@ internal val userModule: RouteConfigure = {
 		}
 	}
 
+	// [/user/search]
+	post("search") {
+		data class SearchUsernamePayload(val username: String)
+
+		val payload = bombCall.receive<SearchUsernamePayload>()
+
+		val user = labyrinth.gameUserFactory.getGameUserByName(payload.username)
+		if(user != null) {
+			bombCall.respondData(user.toBO().toData())
+		} else {
+			bombCall.respondError(toError(Localization.UserNotFound))
+		}
+	}
+
 	route("{id}") {
 
 		// [/user/{id}/best]
