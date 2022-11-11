@@ -7,7 +7,7 @@ import explode2.booster.gatekeeper.logger
 import explode2.gateau.SongState
 import explode2.labyrinth.LabyrinthPlugin
 
-fun CommandDispatcher<GatekeeperSource>.exampleModule() = register("example") {
+fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule() = register("example") {
 	literal("user") {
 		executesX {
 			val u = LabyrinthPlugin.labyrinth.gameUserFactory.createGameUser("Taskeren", "123456")

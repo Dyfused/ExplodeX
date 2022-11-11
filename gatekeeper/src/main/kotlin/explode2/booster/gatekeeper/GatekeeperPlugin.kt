@@ -1,10 +1,11 @@
 package explode2.booster.gatekeeper
 
-import cn.taskeren.brigadierx.*
+import cn.taskeren.brigadierx.executesX
+import cn.taskeren.brigadierx.register
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import explode2.booster.BoosterPlugin
-import explode2.booster.gatekeeper.command.exampleModule
+import explode2.booster.gatekeeper.command.addGenerateExampleModule
 import explode2.labyrinth.LabyrinthPlugin
 import net.minecrell.terminalconsole.SimpleTerminalConsole
 import org.slf4j.Logger
@@ -49,7 +50,7 @@ class GatekeeperPlugin : BoosterPlugin {
 					}
 				}
 
-				exampleModule()
+				addGenerateExampleModule()
 			}
 		}
 
