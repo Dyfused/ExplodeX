@@ -14,4 +14,6 @@ object Localization {
 
 	const val ResourceNotFound = "RESOURCE_NOT_FOUND"
 
+	const val InvalidArgument = "INVALID_ARGUMENT"
+
 }

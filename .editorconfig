@@ -4,4 +4,5 @@ root = true
 charset = utf-8
 
 [{*.java, *.kt}]
+indent_style = tab
 indent_size = tab

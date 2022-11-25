@@ -7,6 +7,7 @@ import explode2.booster.bomb.submods.basic.WelcomeBO
 import explode2.booster.bomb.submods.chart.chartModule
 import explode2.booster.bomb.submods.chart.setModule
 import explode2.booster.bomb.submods.extra.newSongModule
+import explode2.booster.bomb.submods.migrate.migrationModule
 import explode2.booster.bomb.submods.user.userModule
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.event.RouteConfigure
@@ -151,7 +152,8 @@ private val bombModule: RouteConfigure = {
 	route("chart", chartModule)
 	// 上传接口模块
 	route("upload", newSongModule)
-
+	// 数据转移模块
+	route("migrate", migrationModule)
 }
 
 internal suspend fun ApplicationCall.respondJson(content: Any?, typeOfSrc: Type? = null, contentType: ContentType? = null, status: HttpStatusCode? = null) {

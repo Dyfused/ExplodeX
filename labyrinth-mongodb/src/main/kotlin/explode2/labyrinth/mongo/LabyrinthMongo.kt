@@ -590,6 +590,10 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			).toList().map(::GameRecordWrap)
 		}
 
+        override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> {
+            return collGameRec.find().skip(skip).limit(limit).map(::GameRecordWrap).toList()
+        }
+
 		override fun toString(): String = delegate.toString()
 	}
 

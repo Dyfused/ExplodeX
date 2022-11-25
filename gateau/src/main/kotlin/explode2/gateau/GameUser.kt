@@ -30,4 +30,6 @@ interface GameUser {
 
 	fun calculateLastRecords(limit: Int): List<GameRecord>
 	fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord>
+
+    fun getAllRecords(limit: Int, skip: Int): List<GameRecord>
 }
