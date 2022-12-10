@@ -45,7 +45,8 @@ class GraphQLPlugin : BoosterPlugin {
 		logger.info("Configuring GraphQL paths in Ktor")
 
 		val welcome = listOf("❄", "❤", "\uD83D\uDCE2", "\uD83D\uDCE3")
-		val playground = Application::class.java.classLoader.getResource("graphql-playground/index.html")?.readText() ?: "<p>Resource Not Found!</p>"
+		val playground = Application::class.java.classLoader.getResource("graphql-playground/index.html")?.readText()
+			?: "<p>Resource Not Found!</p>"
 
 		e.configure {
 			routing {
@@ -55,8 +56,13 @@ class GraphQLPlugin : BoosterPlugin {
 					}
 					post {
 						when(val r = server.handle(call)) {
-							null -> call.respondText("Invalid request!", status = HttpStatusCode.BadRequest)
-							else -> call.respondText(r)
+							null -> call.respondText(
+								"Invalid request!",
+								contentType = ContentType.Application.Json,
+								status = HttpStatusCode.BadRequest
+							)
+
+							else -> call.respondText(r, contentType = ContentType.Application.Json)
 						}
 					}
 				}

@@ -128,7 +128,11 @@ private val welcomeMessages = listOf(
 	"Light and Dark. Heaven or hell. What’s the difference?"
 )
 
-internal inline val PipelineContext<*, ApplicationCall>.bombCall: BombApplicationCall get() = BombApplicationCall(context)
+internal inline val PipelineContext<*, ApplicationCall>.bombCall: BombApplicationCall
+	get() = BombApplicationCall(
+		context
+	)
+
 internal class BombApplicationCall(private val delegate: ApplicationCall) : ApplicationCall by delegate {
 	override fun toString(): String =
 		"BombApplicationCall(requestUri=${request.uri}, requestHeaders=${request.headers}, requestCookies=${request.cookies})"
@@ -156,7 +160,12 @@ private val bombModule: RouteConfigure = {
 	route("migrate", migrationModule)
 }
 
-internal suspend fun ApplicationCall.respondJson(content: Any?, typeOfSrc: Type? = null, contentType: ContentType? = null, status: HttpStatusCode? = null) {
+internal suspend fun ApplicationCall.respondJson(
+	content: Any?,
+	typeOfSrc: Type? = null,
+	contentType: ContentType? = ContentType.Application.Json,
+	status: HttpStatusCode? = null
+) {
 	runCatching {
 		if(typeOfSrc != null) { // 如果提供了 Type 就用
 			gson.toJson(content, typeOfSrc)
