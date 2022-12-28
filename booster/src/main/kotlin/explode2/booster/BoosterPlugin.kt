@@ -24,4 +24,4 @@ fun BoosterPlugin.saveConfig() =
 
 @Suppress("UNCHECKED_CAST")
 val <T: BoosterPlugin> Class<T>.instance get(): T? =
-	ExplodeService[this as Class<BoosterPlugin>] as T
+	ExplodeService[this as Class<BoosterPlugin>] as? T

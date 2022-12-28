@@ -27,6 +27,7 @@ interface RedirectResourceProvider : ResourceProvider {
 	override fun getUserAvatar(id: String, token: String?): String
 }
 
+@Deprecated("legacy")
 interface SimpleResourceProvider : ByteArrayResourceProvider {
 
 	fun getMusic(id: String): ByteArray

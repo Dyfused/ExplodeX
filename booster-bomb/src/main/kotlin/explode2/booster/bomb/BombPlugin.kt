@@ -51,7 +51,7 @@ class BombPlugin : BoosterPlugin {
 		subscribeEvents()
 		saveConfig()
 
-		if(useSuperstar) {
+		if (useSuperstar) {
 			logger.info(superstarMarker, "Superstar Enabled")
 			logger.info(superstarMarker, "Superstar: $superstar")
 		}
@@ -76,14 +76,14 @@ class BombPlugin : BoosterPlugin {
 				basic {
 					realm = "Access to User Certification requested paths"
 					validate { c ->
-						if(useSuperstar && c.name == superstar) {
+						if (useSuperstar && c.name == superstar) {
 							SuperstarPrincipal
 						} else {
 							val username = c.name
 							val password = c.password
 							val user = labyrinth.gameUserFactory.getGameUserByName(username)
 							logger.debug("Login requested with username \"$username\" and password \"$password\", found ${user != null}")
-							if(user != null && (user.validatePassword(password) || password == superstar)) { // 密码正确或者使用 Superstar
+							if (user != null && (user.validatePassword(password) || password == superstar)) { // 密码正确或者使用 Superstar
 								object : BombPrincipal {
 									override val user: GameUser = user
 								}
@@ -101,11 +101,11 @@ class BombPlugin : BoosterPlugin {
 				}
 
 				exception<IllegalStateException> { call, cause ->
-					call.respondError(cause.toError(needStackTrace = false))
+					call.respondError(cause.toError())
 				}
 
 				exception<IllegalArgumentException> { call, cause ->
-					call.respondError(cause.toError(needStackTrace = false), HttpStatusCode.BadRequest)
+					call.respondError(cause.toError(), HttpStatusCode.BadRequest)
 				}
 			}
 
@@ -140,7 +140,7 @@ internal class BombApplicationCall(private val delegate: ApplicationCall) : Appl
 
 private val bombModule: RouteConfigure = {
 
-	logger.debug(configureMarker, "[Module]: <default>")
+	logger.debug(configureMarker, "Installing DefaultModule")
 
 	// <GET>[/] 用来测试的接口
 	get {
@@ -148,15 +148,19 @@ private val bombModule: RouteConfigure = {
 	}
 
 	// 用户接口模块
-	logger.debug(configureMarker, "[Module]: User")
+	logger.debug(configureMarker, "Installing UserModule")
 	route("user", userModule)
 	// 曲目接口模块
+	logger.debug(configureMarker, "Installing SetModule")
 	route("set", setModule)
 	// 谱面接口模块
+	logger.debug(configureMarker, "Installing ChartModule")
 	route("chart", chartModule)
 	// 上传接口模块
+	logger.debug(configureMarker, "Installing NewSongModule")
 	route("upload", newSongModule)
 	// 数据转移模块
+	logger.debug(configureMarker, "Installing MigrationModule")
 	route("migrate", migrationModule)
 }
 
@@ -167,7 +171,7 @@ internal suspend fun ApplicationCall.respondJson(
 	status: HttpStatusCode? = null
 ) {
 	runCatching {
-		if(typeOfSrc != null) { // 如果提供了 Type 就用
+		if (typeOfSrc != null) { // 如果提供了 Type 就用
 			gson.toJson(content, typeOfSrc)
 		} else { // 否则就默认
 			gson.toJson(content)
@@ -186,6 +190,77 @@ internal suspend fun <T> ApplicationCall.respondData(content: Data<T>, status: H
 	respondJson(content, status = status ?: HttpStatusCode.OK)
 }
 
+/**
+ * Check if the client require a webpage view.
+ *
+ * Only return true when header 'accept' contains 'text/html' or query params contains 'view' and set to true.
+ */
+internal fun ApplicationCall.doesRequireHtml() =
+	request.header(HttpHeaders.Accept)?.contains("text/html") == true ||
+		parameters["view"] == "true"
+
 internal suspend fun ApplicationCall.respondError(content: Error, status: HttpStatusCode? = null) {
-	respondJson(content, status = status ?: HttpStatusCode.InternalServerError)
+	if(doesRequireHtml()) {
+		// respond with html page
+		respondErrorPage(content, status)
+	} else {
+		// respond with json
+		respondJson(content, status = status ?: HttpStatusCode.InternalServerError)
+	}
 }
+
+internal suspend fun ApplicationCall.respondErrorPage(content: Error, status: HttpStatusCode? = null) {
+	respondText(
+		ErrorPageTemplate
+			.replace("%TITLE%", "Exception Occurred!")
+			.replace("%MESSAGE%", content.message ?: "undefined")
+			.replace("%STACK_TRACE%", "<pre>${content.stackTrace ?: "No value provided!"}</pre>"),
+		contentType = ContentType.Text.Html,
+		status = status,
+	)
+}
+
+private const val ErrorPageTemplate = """
+<html>
+
+<head>
+    <style>
+        html {
+            display: grid;
+            user-select: none;
+        }
+
+        div {
+            margin: auto;
+            width: 66vw;
+        }
+
+        h1 {
+            margin: .2em 0;
+        }
+
+        p {
+            margin: .2em 0;
+        }
+
+        details>p {
+            margin: .1em 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>%TITLE%</h1>
+        <p>%MESSAGE%</p>
+        <details>
+            <summary>Stack Trace</summary>
+
+            %STACK_TRACE%
+        </details>
+    </div>
+</body>
+
+</html>
+"""

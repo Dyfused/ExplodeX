@@ -11,8 +11,6 @@ interface SongSetFactory {
 
 	fun getSongSetByChart(chartId: String): SongSet?
 
-	fun SongChart.getParentSet() = getSongSetByChart(id)
-
 	fun createSongSet(
 		musicName: String,
 		musicComposer: String,
