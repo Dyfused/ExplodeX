@@ -1,7 +1,7 @@
 package explode2.booster.bomb
 
 import com.google.gson.Gson
-import explode2.booster.*
+import explode2.booster.BoosterPlugin
 import explode2.booster.bomb.submods.*
 import explode2.booster.bomb.submods.basic.WelcomeBO
 import explode2.booster.bomb.submods.chart.chartModule
@@ -9,8 +9,11 @@ import explode2.booster.bomb.submods.chart.setModule
 import explode2.booster.bomb.submods.extra.newSongModule
 import explode2.booster.bomb.submods.migrate.migrationModule
 import explode2.booster.bomb.submods.user.userModule
+import explode2.booster.config
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.event.RouteConfigure
+import explode2.booster.saveConfig
+import explode2.booster.subscribeEvents
 import explode2.gateau.GameUser
 import explode2.labyrinth.LabyrinthPlugin.Companion.labyrinth
 import io.ktor.http.*
@@ -18,6 +21,7 @@ import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -27,7 +31,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
 import java.lang.reflect.Type
-import java.util.UUID
+import java.util.*
 
 const val BombApiVersion = 2 // 0 和 1 在 Explode-Kotlin 里，反正都是异坨屎
 const val BombApiVersionPatch = 0
@@ -51,7 +55,7 @@ class BombPlugin : BoosterPlugin {
 		subscribeEvents()
 		saveConfig()
 
-		if (useSuperstar) {
+		if(useSuperstar) {
 			logger.info(superstarMarker, "Superstar Enabled")
 			logger.info(superstarMarker, "Superstar: $superstar")
 		}
@@ -107,6 +111,16 @@ class BombPlugin : BoosterPlugin {
 				exception<IllegalArgumentException> { call, cause ->
 					call.respondError(cause.toError(), HttpStatusCode.BadRequest)
 				}
+			}
+
+			install(CORS) {
+				allowMethod(HttpMethod.Put)
+				allowMethod(HttpMethod.Patch)
+				allowMethod(HttpMethod.Delete)
+
+				allowHeader(HttpHeaders.ContentType)
+
+				anyHost()
 			}
 
 			routing {
