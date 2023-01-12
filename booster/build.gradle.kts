@@ -40,7 +40,8 @@ dependencies {
     api("io.ktor:ktor-server-cors:2.1.2")
 
     // providing classloading
-    api("org.xeustechnologies:jcl-core:2.8")
+    api("io.github.lxgaming:classloaderutils:1.0.1")
+
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")

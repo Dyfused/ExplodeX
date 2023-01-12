@@ -12,3 +12,9 @@ include("booster-resource")
 include("explode-proxy")
 include("booster-bomb")
 include("booster-resource-redirect")
+
+include("dynamite-cli")
+project(":dynamite-cli").projectDir = file("devtools/dynamite-cli")
+
+include("aliyun-oss-resource")
+project(":aliyun-oss-resource").projectDir = file("booster-plugins/aliyun-oss-resource")
