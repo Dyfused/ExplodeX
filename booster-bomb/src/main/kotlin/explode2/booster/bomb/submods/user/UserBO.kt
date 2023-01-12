@@ -13,11 +13,13 @@ internal data class UserBO(
 	val bought_sets: List<String>,
 	val r: Int,
 	val highest_golden_medal: Int,
+	val omega_count: Int
 )
 
 internal fun GameUser.toBO() =
 	UserBO(
 		id, username, coin, diamond,
 		ppTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), isReviewer,
-		ownedSets.map { it.id }, calculateR(), calculateHighestGoldenMedal()
+		ownedSets.map { it.id }, calculateR(), calculateHighestGoldenMedal(),
+		omegaCount
 	)

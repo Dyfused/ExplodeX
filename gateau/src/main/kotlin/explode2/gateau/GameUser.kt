@@ -32,4 +32,6 @@ interface GameUser {
 	fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord>
 
     fun getAllRecords(limit: Int, skip: Int): List<GameRecord>
+
+	val omegaCount: Int
 }

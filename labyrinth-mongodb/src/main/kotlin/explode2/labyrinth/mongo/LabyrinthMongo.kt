@@ -594,6 +594,18 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
             return collGameRec.find().skip(skip).limit(limit).map(::GameRecordWrap).toList()
         }
 
+		override val omegaCount: Int
+			get() {
+				data class Omegas(val omegas: Int)
+
+				return collGameRec.aggregate<Omegas>(
+					match(MongoGameRecord::playerId eq id),
+					match(MongoGameRecord::score eq 1_000_000),
+					group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
+					Aggregates.count("omegas")
+				).single().omegas
+			}
+
 		override fun toString(): String = delegate.toString()
 	}
 

@@ -37,5 +37,6 @@ object SuperstarPrincipal : BombPrincipal {
 		override fun calculateLastRecords(limit: Int): List<GameRecord> = emptyList()
 		override fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord> = emptyList()
         override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> = emptyList()
+		override val omegaCount: Int = 0
 	}
 }
