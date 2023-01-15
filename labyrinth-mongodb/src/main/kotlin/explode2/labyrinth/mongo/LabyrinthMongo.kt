@@ -9,11 +9,13 @@ import explode2.labyrinth.*
 import explode2.labyrinth.event.SongCreatedEvent
 import explode2.labyrinth.mongo.po.*
 import explode2.labyrinth.mongo.po.aggregated.*
+import explode2.labyrinth.util.StringProcessor
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
 import java.lang.Character.UnicodeScript
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.regex.PatternSyntaxException
 
 class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoBuilder()) : SongSetFactory,
 	SongChartFactory,
@@ -91,53 +93,169 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 	): Collection<SongSet> {
 		require(limit < 500) { "too much content requested" }
 
-		var filter: Bson = EMPTY_BSON
+		class SongSetWithCharts(val charts: List<MongoSongChart>)
+		class SongSetWithPlayCount(val playCount: Int)
+
+		val pipeline: MutableList<Bson> = mutableListOf()
+
 		if(!matchingName.isNullOrBlank()) {
-			filter = and(filter, MongoSongSet::musicName.regex(matchingName, "i"))
-		}
-		if(matchingCategory != null) {
-			if(matchingCategory == SearchCategory.HIDDEN) {
-				filter = and(filter, MongoSongSet::hidden eq true)
-			} else {
-				filter = and(filter, MongoSongSet::hidden eq false)
-				when(matchingCategory) {
-					SearchCategory.OFFICIAL -> {
-						filter = and(filter, MongoSongSet::category eq 2)
-					}
+			val proc = StringProcessor(matchingName)
 
-					SearchCategory.RANKED -> {
-						filter = and(filter, or(MongoSongSet::category eq 1, MongoSongSet::category eq 2))
+			when {
+				// 正则匹配名字
+				proc.consume("r:") -> {
+					kotlin.runCatching {
+						val regex = Regex(proc.remaining)
+						pipeline += match(MongoSongSet::musicName.regex(regex))
+					}.onFailure { // 处理正则错误
+						if(it is PatternSyntaxException) {
+							error("failed to compile regex pattern!")
+						} else {
+							throw it
+						}
 					}
+				}
 
-					SearchCategory.UNRANKED -> {
-						filter = and(filter, MongoSongSet::category eq 0)
+				// 匹配难度
+				proc.consume("h:") -> {
+					// 把查询谱面信息的 pipeline 加进来
+					pipeline += lookup("Charts", "chartIds", "_id", "charts")
+
+					when {
+						proc.consume("==") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::difficultyValue eq proc.remainingAsInt))
+						}
+
+						proc.consume(">=") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::difficultyValue gte proc.remainingAsInt))
+						}
+
+						proc.consume("<=") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::difficultyValue lte proc.remainingAsInt))
+						}
+
+						proc.consume(">") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::difficultyValue gt proc.remainingAsInt))
+						}
+
+						proc.consume("<") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::difficultyValue lt proc.remainingAsInt))
+						}
+
+						proc.consume("!=") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::difficultyValue ne proc.remainingAsInt))
+						}
+
+						else -> {
+							error("invalid matching syntax")
+						}
 					}
+				}
 
-					SearchCategory.REVIEW -> {
-						filter = and(filter, MongoSongSet::reviewing eq true)
+				// 匹配谱面数量
+				proc.consume("cc:") -> {
+					// 把查询谱面信息的 pipeline 加进来
+					pipeline += lookup("Charts", "chartIds", "_id", "charts")
+
+					val count = proc.remainingAsInt ?: error("invalid count number!")
+					pipeline += match(SongSetWithCharts::charts size count)
+				}
+
+				// 匹配定数
+				proc.consume("d:") -> {
+					// 把查询谱面信息的 pipeline 加进来
+					pipeline += lookup("Charts", "chartIds", "_id", "charts")
+
+					when {
+						proc.consume("==") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::d eq proc.remainingAsDouble))
+						}
+
+						proc.consume(">=") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::d gte proc.remainingAsDouble))
+						}
+
+						proc.consume("<=") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::d lte proc.remainingAsDouble))
+						}
+
+						proc.consume(">") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::d gt proc.remainingAsDouble))
+						}
+
+						proc.consume("<") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::d lt proc.remainingAsDouble))
+						}
+
+						proc.consume("!=") -> {
+							pipeline += match(SongSetWithCharts::charts elemMatch (MongoSongChart::d ne proc.remainingAsDouble))
+						}
 					}
+				}
 
-					else -> {}
+				// 默认模糊查询名字
+				else -> {
+					pipeline += match(MongoSongSet::musicName.regex(matchingName, "i"))
 				}
 			}
 		}
 
-		val iter = collSet.find(filter).limit(limit).skip(skip)
-		return when(sortBy) {
-			SearchSort.DESCENDING_BY_PLAY_COUNT -> {
-				iter.sortedByDescending { song ->
-					song.chartIds.sumOf { collGameRec.countDocuments(MongoGameRecord::playedChartId eq it) }
-				}.map(::SongSetDelegate).toList()
+		if(matchingCategory != null) {
+			// 限定隐藏
+			pipeline += if(matchingCategory == SearchCategory.HIDDEN) {
+				match(MongoSongSet::hidden eq true)
+			} else {
+				match(MongoSongSet::hidden eq false)
 			}
 
-			SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
-				iter.sort(descending(MongoSongSet::publishTime)).map(::SongSetDelegate).toList()
+			// 限定审核
+			pipeline += if(matchingCategory == SearchCategory.REVIEW) {
+				match(MongoSongSet::reviewing eq true)
+			} else {
+				match(MongoSongSet::reviewing eq false)
 			}
 
-			else -> {
-				error("Unexpected sorting strategy: $sortBy")
+			// 其他
+			when(matchingCategory) {
+				SearchCategory.OFFICIAL -> {
+					pipeline += match(MongoSongSet::category eq 2)
+				}
+
+				SearchCategory.RANKED -> {
+					pipeline += match(or(MongoSongSet::category eq 1, MongoSongSet::category eq 2))
+				}
+
+				SearchCategory.UNRANKED -> {
+					pipeline += match(MongoSongSet::category eq 0)
+				}
+
+				else -> {}
 			}
 		}
+
+		// 排序顺序
+		when(sortBy) {
+			null, SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
+				pipeline += sort(descending(MongoSongSet::publishTime))
+			}
+
+			// FIXME: 修复性能问题
+			SearchSort.DESCENDING_BY_PLAY_COUNT -> {
+				// 添加游玩次数查询
+				pipeline += lookup("GameRecords", "chartIds", "playedChartId", "playRecords")
+				pipeline += addFields(Field(
+					"playCount",
+					MongoOperator.size.from("\$playRecords")
+				))
+				pipeline += sort(descending(SongSetWithPlayCount::playCount))
+			}
+		}
+
+		// 添加限制
+		pipeline += skip(skip)
+		pipeline += limit(limit)
+
+		return collSet.aggregate<MongoSongSet>(*pipeline.toTypedArray()).map(::SongSetDelegate).toList()
 	}
 
 	// SONG CHART
@@ -590,9 +708,9 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			).toList().map(::GameRecordWrap)
 		}
 
-        override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> {
-            return collGameRec.find().skip(skip).limit(limit).map(::GameRecordWrap).toList()
-        }
+		override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> {
+			return collGameRec.find().skip(skip).limit(limit).map(::GameRecordWrap).toList()
+		}
 
 		override val omegaCount: Int
 			get() {
