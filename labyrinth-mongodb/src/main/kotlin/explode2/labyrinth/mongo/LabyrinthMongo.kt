@@ -721,7 +721,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 					match(MongoGameRecord::score eq 1_000_000),
 					group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
 					Aggregates.count("omegas")
-				).single().omegas
+				).singleOrNull()?.omegas ?: 0 // 避免因为没有电阻而报错
 			}
 
 		override fun toString(): String = delegate.toString()
