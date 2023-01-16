@@ -236,7 +236,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		// 排序顺序
 		when(sortBy) {
 			null, SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
-				pipeline += sort(descending(MongoSongSet::publishTime))
+				pipeline += sort(descending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
 			}
 
 			// FIXME: 修复性能问题
@@ -247,7 +247,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 					"playCount",
 					MongoOperator.size.from("\$playRecords")
 				))
-				pipeline += sort(descending(SongSetWithPlayCount::playCount))
+				pipeline += sort(descending(SongSetWithPlayCount::playCount, MongoSongSet::musicName, MongoSongSet::id))
 			}
 		}
 
