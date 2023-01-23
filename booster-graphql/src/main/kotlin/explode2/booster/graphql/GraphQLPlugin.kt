@@ -19,6 +19,10 @@ internal val logger: Logger = LoggerFactory.getLogger("GraphQL")
 
 class GraphQLPlugin : BoosterPlugin {
 
+	companion object {
+		val Instance get() = BoosterPlugin.getPlugin<GraphQLPlugin>() ?: error("GraphQL plugin is not registered yet!")
+	}
+
 	override val id: String = "graphql"
 	override val version: String = "1.0.0"
 

@@ -10,6 +10,16 @@ interface BoosterPlugin {
 	fun onInit() {}
 	fun onPreInit() {}
 	fun onPostInit() {}
+
+	companion object {
+		fun getPlugin(pluginClass: Class<out BoosterPlugin>): BoosterPlugin? {
+			return ExplodeService[pluginClass]
+		}
+
+		inline fun <reified T: BoosterPlugin> getPlugin(): BoosterPlugin? {
+			return ExplodeService[T::class.java]
+		}
+	}
 }
 
 fun <T> T.subscribeEvents() {

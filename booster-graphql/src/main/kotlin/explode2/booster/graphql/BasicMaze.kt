@@ -2,12 +2,16 @@ package explode2.booster.graphql
 
 import com.google.common.cache.CacheBuilder
 import explode2.booster.Booster.dispatchEvent
+import explode2.booster.config
 import explode2.booster.graphql.NonNegativeInt.Companion.int
 import explode2.booster.graphql.definition.*
 import explode2.booster.graphql.event.*
-import explode2.gateau.*
-import explode2.labyrinth.*
+import explode2.gateau.AssessmentRecord
+import explode2.gateau.GameRecord
+import explode2.gateau.GameUser
 import explode2.labyrinth.LabyrinthPlugin.Companion.labyrinth
+import explode2.labyrinth.SearchCategory
+import explode2.labyrinth.SearchSort
 import graphql.schema.DataFetchingEnvironment
 import thirdparty.goodbird.GoodBirdOracle
 import java.time.OffsetDateTime
@@ -115,7 +119,17 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		return AfterAssessmentModel(record.result, u.calculateR(), u.coin, u.diamond)
 	}
 
-	private val gameSubmitCache = CacheBuilder.newBuilder().expireAfterWrite(10.minutes.toJavaDuration())
+	private val expireTimeInMin: Int
+		get() = GraphQLPlugin.Instance.config.getInt(
+					"submit-expire-time-in-minutes",
+					"general",
+					60,
+					0,
+					Int.MAX_VALUE,
+					"The minutes to expire a beginning submission. Once expired, the ending submission will be invalid."
+				)
+
+	private val gameSubmitCache = CacheBuilder.newBuilder().expireAfterWrite(expireTimeInMin.minutes.toJavaDuration())
 		.build<String, String>() // randomId -> chartId
 
 	override suspend fun submitBeforePlay(

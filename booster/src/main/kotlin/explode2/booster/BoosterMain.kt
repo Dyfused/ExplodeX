@@ -89,7 +89,7 @@ object ExplodeService {
 	private val classToService: MutableMap<Class<out BoosterPlugin>, BoosterPlugin> = mutableMapOf()
 
 	operator fun get(id: String): BoosterPlugin? = services[id]
-	operator fun get(cls: Class<BoosterPlugin>) = classToService[cls]
+	operator fun get(cls: Class<out BoosterPlugin>) = classToService[cls]
 
 	private val PluginFolder = File("./plugins/").also { it.mkdirs() }
 

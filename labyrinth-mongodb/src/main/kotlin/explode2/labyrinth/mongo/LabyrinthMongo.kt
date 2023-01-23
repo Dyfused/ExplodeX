@@ -32,7 +32,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	private fun updateMongoSongSet(id: String, value: MongoSongSet): MongoSongSet {
 		collSet.updateOneById(id, value, upsert())
-		return collSet.findOneById(id).nn()
+		return collSet.findOneById(id).nn("collSet.findOneById($id)")
 	}
 
 	override fun getSongSetById(id: String): SongSet? {
@@ -262,7 +262,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	private fun updateMongoSongChart(id: String, value: MongoSongChart): MongoSongChart {
 		collChart.updateOneById(id, value, upsert())
-		return collChart.findOneById(id).nn()
+		return collChart.findOneById(id).nn("collChart.findOneById($id)")
 	}
 
 	private fun getSongChartPlayCount(chartId: String): Int? {
@@ -293,7 +293,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	private fun updateMongoGameUser(id: String, value: MongoGameUser): MongoGameUser {
 		collUser.updateOneById(id, value, upsert())
-		return collUser.findOneById(id).nn()
+		return collUser.findOneById(id).nn("collUser.findOneById($id)")
 	}
 
 	override fun getGameUserById(id: String): GameUser? {
@@ -330,7 +330,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	private fun updateMongoGameRecord(id: String, value: MongoGameRecord): MongoGameRecord {
 		collGameRec.updateOneById(id, value, upsert())
-		return collGameRec.findOneById(id).nn()
+		return collGameRec.findOneById(id).nn("collGameRec.findOneById($id)")
 	}
 
 	override fun getChartRecords(
@@ -405,7 +405,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	private fun updateMongoAssessRecord(id: String, value: MongoAssessRecord): MongoAssessRecord {
 		collAssessRec.updateOneById(id, value, upsert())
-		return collAssessRec.findOneById(id).nn()
+		return collAssessRec.findOneById(id).nn("collAssessRec.findOneById($id)")
 	}
 
 	override fun getAssessmentRecords(assessmentId: String, limit: Int, skip: Int): List<AssessmentRecord> {
@@ -486,7 +486,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	private fun updateMongoAssessmentGroup(id: String, value: MongoAssessGroup): MongoAssessGroup {
 		collAssessInfo.updateOneById(id, value, upsert())
-		return collAssessInfo.findOneById(id).nn()
+		return collAssessInfo.findOneById(id).nn("collAssessInfo.findOneById($id)")
 	}
 
 	@Deprecated("Use getAssessmentGroups", replaceWith = ReplaceWith("getAssessmentGroups()[0]"))
@@ -749,7 +749,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val ranking: Int?
 			get() = null
 		override val player: GameUser
-			get() = getGameUserById(playerId).nn()
+			get() = getGameUserById(playerId).nn("getGameUserById($playerId)")
 
 		override fun toString(): String = value.toString()
 	}
@@ -776,7 +776,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val ranking: Int?
 			get() = value.ranking
 		override val player: GameUser
-			get() = getGameUserById(playerId).nn()
+			get() = getGameUserById(playerId).nn("getGameUserById($playerId)")
 
 		override fun toString(): String = value.toString()
 	}
@@ -814,10 +814,10 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			get() = null
 
 		override val player: GameUser
-			get() = getGameUserById(playerId).nn()
+			get() = getGameUserById(playerId).nn("getGameUserById($playerId)")
 		override val result: Int
 			get() {
-				val ass = getAssessmentById(assessmentId).nn()
+				val ass = getAssessmentById(assessmentId).nn("getAssessmentById($assessmentId)")
 				return when {
 					(sumAccuracy >= ass.goldenPassAccuracy) -> 2
 					(sumAccuracy >= ass.normalPassAccuracy) -> 1
@@ -861,10 +861,10 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			get() = value.ranking
 
 		override val player: GameUser
-			get() = getGameUserById(playerId).nn()
+			get() = getGameUserById(playerId).nn("getGameUserById($playerId)")
 		override val result: Int
 			get() {
-				val ass = getAssessmentById(assessmentId).nn()
+				val ass = getAssessmentById(assessmentId).nn("getAssessmentById($assessmentId)")
 				return when {
 					(sumAccuracy >= ass.goldenPassAccuracy) -> 2
 					(sumAccuracy >= ass.normalPassAccuracy) -> 1
@@ -955,7 +955,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 						override val id: String
 							get() = it
 						override val wrappingSet: SongSet
-							get() = getSongSetByChart(it).nn()
+							get() = getSongSetByChart(it).nn("getSongSetByChart($it)")
 					}
 				}
 
