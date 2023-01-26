@@ -1,7 +1,6 @@
 package explode2.booster
 
 import com.github.taskeren.config.Configuration
-import java.io.File
 
 interface BoosterPlugin {
 	val id: String
@@ -27,7 +26,7 @@ fun <T> T.subscribeEvents() {
 }
 
 val BoosterPlugin.config: Configuration
-	get() = Configuration(File("$id.cfg"))
+	get() = Booster.config(id)
 
 fun BoosterPlugin.saveConfig() =
 	config.save()

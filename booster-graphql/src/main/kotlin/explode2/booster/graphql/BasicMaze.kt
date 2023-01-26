@@ -1,8 +1,8 @@
 package explode2.booster.graphql
 
 import com.google.common.cache.CacheBuilder
+import explode2.booster.Booster
 import explode2.booster.Booster.dispatchEvent
-import explode2.booster.config
 import explode2.booster.graphql.NonNegativeInt.Companion.int
 import explode2.booster.graphql.definition.*
 import explode2.booster.graphql.event.*
@@ -119,15 +119,17 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		return AfterAssessmentModel(record.result, u.calculateR(), u.coin, u.diamond)
 	}
 
+	private val config = Booster.config("basic-maze")
+
 	private val expireTimeInMin: Int
-		get() = GraphQLPlugin.Instance.config.getInt(
-					"submit-expire-time-in-minutes",
-					"general",
-					60,
-					0,
-					Int.MAX_VALUE,
-					"The minutes to expire a beginning submission. Once expired, the ending submission will be invalid."
-				)
+		get() = config.getInt(
+			"submit-expire-time-in-minutes",
+			"general",
+			60,
+			0,
+			Int.MAX_VALUE,
+			"The minutes to expire a beginning submission. Once expired, the ending submission will be invalid."
+		)
 
 	private val gameSubmitCache = CacheBuilder.newBuilder().expireAfterWrite(expireTimeInMin.minutes.toJavaDuration())
 		.build<String, String>() // randomId -> chartId
@@ -246,7 +248,11 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 	}
 
 	override suspend fun assessmentRank(
-		env: DataFetchingEnvironment, assessmentGroupId: String?, medalLevel: Int?, limit: NonNegativeInt?, skip: NonNegativeInt?
+		env: DataFetchingEnvironment,
+		assessmentGroupId: String?,
+		medalLevel: Int?,
+		limit: NonNegativeInt?,
+		skip: NonNegativeInt?
 	): List<AssessmentRecordWithRankModel> {
 		return labyrinth.assessmentInfoFactory.getAssessmentGroupById(assessmentGroupId.baah("invalid group"))
 			.baah("group not found").getAssessmentForMedal(medalLevel.baah("invalid medal level")).baah("invalid medal")

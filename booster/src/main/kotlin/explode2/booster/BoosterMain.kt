@@ -43,6 +43,9 @@ fun main() {
 	logger.info("Post-initializing plugins")
 	ExplodeService.dispatchPostInit()
 
+	// 保存所有配置文档的修改
+	Booster.saveAllConfig()
+
 	// 启动服务器线程
 	thread(name = "ktor") {
 		var addr: String
@@ -95,30 +98,49 @@ object ExplodeService {
 
 	fun loadBooster() {
 		loadPluginJars()
-		loadPlugins(load())
+		constructPlugins()
 	}
 
 	inline fun <reified T> load(): ServiceLoader<T> {
 		return ServiceLoader.load(T::class.java)
 	}
 
-	private fun loadPlugins(serviceLoader: ServiceLoader<BoosterPlugin>) {
-		serviceLoader.stream().forEach { provider ->
-			runCatching {
-				loadSinglePlugin(provider)
-			}.onFailure {
-				logger.error(preludeMarker, "An exception occurred when loading plugin: ${provider.type().canonicalName}", it)
+	/**
+	 * 将外部 JAR 读取到 ClassLoader
+	 */
+	private fun loadPluginJars() {
+		logger.info(preludeMarker, "Working directory: ${System.getProperty("user.dir")}")
+		val urls = PluginFolder.listFiles { _, name -> name.endsWith(".jar") }?.onEach {
+			logger.info(preludeMarker, "Scanned external jar: ${it.name}")
+		}?.map(File::toURI)?.map(URI::toURL)
+		if(urls == null) {
+			logger.warn(preludeMarker, "Plugins folder is not existent or something else happened")
+		} else {
+			urls.forEachExceptional({ url ->
+				ClassLoaderUtils.appendToClassPath(url)
+			}) { url, ex ->
+				logger.error(preludeMarker, "Exception occurred when loading external jar: $url", ex)
+				// no-op
 			}
 		}
 	}
 
-	private fun loadSinglePlugin(provider: ServiceLoader.Provider<BoosterPlugin>) {
-		val plugin = provider.get()
-		if(services.putIfAbsent(plugin.id, plugin) == null) {
-			logger.info(preludeMarker, "Scanned plugin: ${plugin.id}(${plugin.version}) <${plugin.javaClass.simpleName}>")
-			classToService[plugin.javaClass] = plugin
-		} else {
-			logger.warn(preludeMarker, "Failed to instantiate plugin ${plugin.id} because of id collision")
+	/**
+	 * 将读取到的 JAR 中的 [BoosterPlugin] 实例化，并注册到表中
+	 */
+	private fun constructPlugins() {
+		load<BoosterPlugin>().stream().forEach { provider ->
+			runCatching {
+				val plugin = provider.get()
+				if(services.putIfAbsent(plugin.id, plugin) == null) {
+					logger.info(preludeMarker, "Scanned plugin: ${plugin.id}(${plugin.version}) <${plugin.javaClass.simpleName}>")
+					classToService[plugin.javaClass] = plugin
+				} else {
+					logger.warn(preludeMarker, "Failed to instantiate plugin ${plugin.id} because of id collision")
+				}
+			}.onFailure {
+				logger.error(preludeMarker, "An exception occurred when loading plugin: ${provider.type().canonicalName}", it)
+			}
 		}
 	}
 
@@ -140,25 +162,6 @@ object ExplodeService {
 
 	fun dispatchPostInit() = services.values.forEachExceptional(BoosterPlugin::onPostInit) { plugin, exception ->
 		logger.error(preludeMarker, "Exception occurred when post-initializing plugin ${plugin.id}", exception)
-	}
-
-	/// LOAD EXTERNAL JARS
-
-	private fun loadPluginJars() {
-		logger.info(preludeMarker, "Working directory: ${System.getProperty("user.dir")}")
-		val urls = PluginFolder.listFiles { _, name -> name.endsWith(".jar") }?.onEach {
-			logger.info(preludeMarker, "Scanned external jar: ${it.name}")
-		}?.map(File::toURI)?.map(URI::toURL)
-		if(urls == null) {
-			logger.warn(preludeMarker, "Plugins folder is not existent or something else happened")
-		} else {
-			urls.forEachExceptional({ url ->
-				ClassLoaderUtils.appendToClassPath(url)
-			}) { url, ex ->
-				logger.error(preludeMarker, "Exception occurred when loading external jar: $url", ex)
-				// no-op
-			}
-		}
 	}
 
 }
