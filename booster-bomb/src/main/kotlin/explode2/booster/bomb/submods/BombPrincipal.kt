@@ -2,7 +2,10 @@ package explode2.booster.bomb.submods
 
 import explode2.booster.bomb.logger
 import explode2.booster.bomb.superstarMarker
-import explode2.gateau.*
+import explode2.gateau.GameRecord
+import explode2.gateau.GameUser
+import explode2.gateau.ScoreOrRanking
+import explode2.gateau.SongSet
 import io.ktor.server.auth.*
 import java.time.OffsetDateTime
 
@@ -38,5 +41,15 @@ object SuperstarPrincipal : BombPrincipal {
 		override fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord> = emptyList()
         override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> = emptyList()
 		override val omegaCount: Int = 0
+		override fun hasPermission(permissionKey: String): Boolean = false
+		override fun grantPermission(permissionKey: String) {
+			logger.warn(superstarMarker, "Unexpected \"grantPermission($permissionKey)\" has been invoked!")
+		}
+		override fun revokePermission(permissionKey: String) {
+			logger.warn(superstarMarker, "Unexpected \"revokePermission($permissionKey)\" has been invoked!")
+		}
+		override fun resetPermission(permissionKey: String) {
+			logger.warn(superstarMarker, "Unexpected \"resetPermission($permissionKey)\" has been invoked!")
+		}
 	}
 }

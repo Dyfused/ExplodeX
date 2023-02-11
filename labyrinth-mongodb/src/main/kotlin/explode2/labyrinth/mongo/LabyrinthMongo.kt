@@ -724,6 +724,49 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				).singleOrNull()?.omegas ?: 0 // 避免因为没有电阻而报错
 			}
 
+		override fun hasPermission(permissionKey: String): Boolean {
+			return if(delegate.permissionGranted?.contains(permissionKey) == true) {
+				// granted
+				true
+			} else {
+				val p = Permission.getOrNull(permissionKey)
+				if(p?.default == true) {
+					// default is true, and check if revoked
+					delegate.permissionRevoked?.contains(permissionKey) == false
+				} else {
+					// default is false
+					false
+				}
+			}
+		}
+
+		override fun grantPermission(permissionKey: String) {
+			val newGrant = delegate.permissionGranted?.toMutableList() ?: mutableListOf()
+			newGrant += permissionKey
+			val newRevoked = delegate.permissionRevoked?.toMutableList() ?: mutableListOf()
+			newRevoked -= permissionKey
+
+			delegate = updateMongoGameUser(id, delegate.copy(permissionGranted = newGrant, permissionRevoked = newRevoked))
+		}
+
+		override fun revokePermission(permissionKey: String) {
+			val newGrant = delegate.permissionGranted?.toMutableList() ?: mutableListOf()
+			newGrant -= permissionKey
+			val newRevoked = delegate.permissionRevoked?.toMutableList() ?: mutableListOf()
+			newRevoked += permissionKey
+
+			delegate = updateMongoGameUser(id, delegate.copy(permissionGranted = newGrant, permissionRevoked = newRevoked))
+		}
+
+		override fun resetPermission(permissionKey: String) {
+			val newGrant = delegate.permissionGranted?.toMutableList() ?: mutableListOf()
+			newGrant -= permissionKey
+			val newRevoked = delegate.permissionRevoked?.toMutableList() ?: mutableListOf()
+			newRevoked -= permissionKey
+
+			delegate = updateMongoGameUser(id, delegate.copy(permissionGranted = newGrant, permissionRevoked = newRevoked))
+		}
+
 		override fun toString(): String = delegate.toString()
 	}
 

@@ -13,4 +13,6 @@ data class MongoGameUser(
 	val ppTime: OffsetDateTime,
 	val isReviewer: Boolean,
 	val ownedSongSetIds: List<String>,
+	val permissionGranted: List<String>? = listOf(),
+	val permissionRevoked: List<String>? = listOf(),
 )

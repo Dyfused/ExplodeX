@@ -13,6 +13,7 @@ interface GameUser {
 
 	var ppTime: OffsetDateTime
 
+	@Deprecated("Use Permission System instead")
 	var isReviewer: Boolean
 
 	val SongSet.isOwned: Boolean
@@ -31,7 +32,13 @@ interface GameUser {
 	fun calculateLastRecords(limit: Int): List<GameRecord>
 	fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord>
 
-    fun getAllRecords(limit: Int, skip: Int): List<GameRecord>
+	fun getAllRecords(limit: Int, skip: Int): List<GameRecord>
 
 	val omegaCount: Int
+
+	fun hasPermission(permissionKey: String): Boolean
+
+	fun grantPermission(permissionKey: String)
+	fun revokePermission(permissionKey: String)
+	fun resetPermission(permissionKey: String)
 }
