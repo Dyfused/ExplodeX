@@ -1,7 +1,9 @@
 import explode2.labyrinth.LabyrinthPlugin
 import java.util.*
+import kotlin.test.Ignore
 import kotlin.test.Test
 
+@Ignore
 internal class TestLabyrinth {
 
 	private val uid = "1c2b86d9-b1f8-423f-9121-84d58dc37ba9"

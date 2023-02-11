@@ -1,10 +1,13 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.incremental.mkdirsOrThrow
 
 plugins {
     java
     kotlin("jvm") version "1.7.20"
     application
     id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+
+	id("com.palantir.git-version") version "1.0.0"
 }
 
 group = "explode"
@@ -66,5 +69,29 @@ allprojects {
 
 	tasks.withType<Jar> {
 		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	}
+}
+
+tasks.build {
+	dependsOn(tasks["gatherArtifact"])
+}
+
+val gitVersion: groovy.lang.Closure<String> by extra
+
+task("gatherArtifact") {
+	dependsOn(":explode-all:shadowJar", ":explode-proxy:shadowJar")
+
+	doLast {
+		logger.info("building artifact")
+
+		// ensure that the output dir is present
+		val outputDir = file("build/gather-builds").apply(File::mkdirsOrThrow)
+
+		val gitVer = runCatching { gitVersion() }.getOrElse { "NO-GIT-TAG" }
+
+		subprojects.forEach { p ->
+			println("collecting project: $p")
+			p.buildDir.resolve("libs").copyRecursively(outputDir.resolve(gitVer).resolve(p.name), true)
+		}
 	}
 }

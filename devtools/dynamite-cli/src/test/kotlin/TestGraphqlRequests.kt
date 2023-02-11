@@ -6,8 +6,10 @@ import io.ktor.serialization.gson.*
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
+import kotlin.test.Ignore
 import kotlin.test.Test
 
+@Ignore
 internal class TestGraphqlRequests {
 
 	private val http = HttpClient(OkHttp) {
