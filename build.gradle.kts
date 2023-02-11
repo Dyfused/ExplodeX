@@ -91,7 +91,11 @@ task("gatherArtifact") {
 
 		subprojects.forEach { p ->
 			println("collecting project: $p")
-			p.buildDir.resolve("libs").copyRecursively(outputDir.resolve(gitVer).resolve(p.name), true)
+			runCatching {
+				p.buildDir.resolve("libs").copyRecursively(outputDir.resolve(gitVer).resolve(p.name), true)
+			}.onFailure {
+				logger.warn("Unable to copy ${p.buildDir}/libs to ${outputDir.resolve(gitVer).resolve(p.name)}", it)
+			}
 		}
 	}
 }
