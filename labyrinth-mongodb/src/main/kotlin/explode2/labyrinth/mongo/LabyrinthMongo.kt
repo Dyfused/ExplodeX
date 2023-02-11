@@ -740,6 +740,21 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			}
 		}
 
+		override fun hasPermission(permission: Permission): Boolean {
+			return if(delegate.permissionGranted?.contains(permission.key) == true) {
+				// granted
+				true
+			} else {
+				if(permission.default) {
+					// default is true, and check if revoked
+					delegate.permissionRevoked?.contains(permission.key) == false
+				} else {
+					// default is false
+					false
+				}
+			}
+		}
+
 		override fun grantPermission(permissionKey: String) {
 			val newGrant = delegate.permissionGranted?.toMutableList() ?: mutableListOf()
 			newGrant += permissionKey

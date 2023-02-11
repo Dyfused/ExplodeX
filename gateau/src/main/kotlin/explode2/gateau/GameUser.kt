@@ -37,6 +37,7 @@ interface GameUser {
 	val omegaCount: Int
 
 	fun hasPermission(permissionKey: String): Boolean
+	fun hasPermission(permission: Permission): Boolean
 
 	fun grantPermission(permissionKey: String)
 	fun revokePermission(permissionKey: String)

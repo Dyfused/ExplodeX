@@ -1,12 +1,16 @@
 package explode2.booster.bomb.submods.extra
 
 import explode2.booster.bomb.*
-import explode2.booster.bomb.bombCall
-import explode2.booster.bomb.respondData
-import explode2.booster.bomb.submods.*
+import explode2.booster.bomb.submods.BombPrincipal
+import explode2.booster.bomb.submods.ExceptionContext
 import explode2.booster.bomb.submods.chart.toBO
+import explode2.booster.bomb.submods.toData
+import explode2.booster.bomb.submods.toError
 import explode2.booster.event.RouteConfigure
-import explode2.gateau.*
+import explode2.gateau.GameUser
+import explode2.gateau.Permission
+import explode2.gateau.SongChart
+import explode2.gateau.SongState
 import explode2.labyrinth.LabyrinthPlugin.Companion.labyrinth
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
@@ -38,6 +42,8 @@ internal val newSongModule: RouteConfigure = {
 			val noter_user: GameUser? = null
 		)
 
+		val permissionUpload = Permission.getOrCreate("bomb.upload")
+
 		post<NewSongPayload> {
 			val (
 				musicName,
@@ -56,6 +62,10 @@ internal val newSongModule: RouteConfigure = {
 
 			val auth = bombCall.principal<BombPrincipal>() ?: return@post bombCall.respondError(toError(Localization.UserLoginFailed))
 			val user = auth.user ?: return@post bombCall.respondError(toError(Localization.UserNotFound))
+
+			if(!user.hasPermission(permissionUpload)) {
+				return@post bombCall.respondError(toError(Localization.PermissionDenied))
+			}
 
 			logger.info("Received new song uploading request from ${user.username}(${user.id})")
 

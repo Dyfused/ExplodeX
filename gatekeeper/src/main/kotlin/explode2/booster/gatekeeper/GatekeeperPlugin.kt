@@ -6,6 +6,7 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import explode2.booster.BoosterPlugin
 import explode2.booster.gatekeeper.command.addGenerateExampleModule
+import explode2.booster.gatekeeper.command.addUserCommand
 import explode2.labyrinth.LabyrinthPlugin
 import net.minecrell.terminalconsole.SimpleTerminalConsole
 import org.slf4j.Logger
@@ -51,6 +52,7 @@ class GatekeeperPlugin : BoosterPlugin {
 				}
 
 				addGenerateExampleModule()
+				addUserCommand()
 			}
 		}
 
