@@ -114,11 +114,15 @@ class BombPlugin : BoosterPlugin {
 			}
 
 			install(CORS) {
+				// Get, Post, Head are in the default allow list, so no need to add them.
 				allowMethod(HttpMethod.Put)
 				allowMethod(HttpMethod.Patch)
 				allowMethod(HttpMethod.Delete)
+				allowMethod(HttpMethod.Options)
 
 				allowHeader(HttpHeaders.ContentType)
+
+				allowCredentials = true
 
 				anyHost()
 			}
