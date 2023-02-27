@@ -27,6 +27,8 @@ tasks.getByName<Test>("test") {
 
 application {
     mainClass.set("explode2.booster.BoosterMainKt")
+    // set working directory of task "run" to "[rootProjectDir]/run".
+    tasks.run.get().workingDir = rootProject.projectDir.resolve("run").apply { this.mkdirs() }
 }
 
 tasks.shadowJar {

@@ -121,6 +121,7 @@ class BombPlugin : BoosterPlugin {
 				allowMethod(HttpMethod.Options)
 
 				allowHeader(HttpHeaders.ContentType)
+				allowHeader(HttpHeaders.Authorization)
 
 				allowCredentials = true
 
