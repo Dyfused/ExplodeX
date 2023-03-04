@@ -124,6 +124,7 @@ class BombPlugin : BoosterPlugin {
 				allowHeader(HttpHeaders.Authorization)
 
 				allowCredentials = true
+				allowNonSimpleContentTypes = true
 
 				anyHost()
 			}
