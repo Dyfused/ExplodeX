@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-	compileOnly(project(":booster-resource"))
+	compileOnly(project(":booster"))
 
-	implementation("com.aliyun.oss:aliyun-sdk-oss:3.16.0")
+	implementation("com.aliyun.oss:aliyun-sdk-oss:3.16.1")
 }

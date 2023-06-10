@@ -1,16 +1,24 @@
 package explode2.booster.gatekeeper.command
 
-import cn.taskeren.brigadierx.*
+import cn.taskeren.brigadierx.executesX
+import cn.taskeren.brigadierx.literal
+import cn.taskeren.brigadierx.register
 import com.mojang.brigadier.CommandDispatcher
+import explode2.booster.gatekeeper.GatekeeperPlugin
 import explode2.booster.gatekeeper.GatekeeperSource
 import explode2.booster.gatekeeper.logger
 import explode2.gateau.SongState
-import explode2.labyrinth.LabyrinthPlugin
 
-fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule() = register("example") {
+fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule(plugin: GatekeeperPlugin) = register("example") {
+
+	val userRepo = plugin.userRepo
+	val songRepo = plugin.songRepo
+	val chartRepo = plugin.chartRepo
+	val assInfoRepo = plugin.assInfoRepo
+
 	literal("user") {
 		executesX {
-			val u = LabyrinthPlugin.labyrinth.gameUserFactory.createGameUser("Taskeren", "123456")
+			val u = userRepo.createGameUser("Taskeren", "123456")
 			logger.info("Added new user Taskeren, id ${u.id}")
 			logger.debug("$u")
 		}
@@ -18,10 +26,10 @@ fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule() = register("e
 
 	literal("song") {
 		executesX {
-			val c = LabyrinthPlugin.labyrinth.songChartFactory.createSongChart(5, 15)
+			val c = chartRepo.createSongChart(5, 15)
 			logger.info("Created chart ${c.id}")
 			logger.debug("$c")
-			val s = LabyrinthPlugin.labyrinth.songSetFactory.createSongSet(
+			val s = songRepo.createSongSet(
 				"TestMusic",
 				"Me",
 				"",
@@ -37,10 +45,10 @@ fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule() = register("e
 	literal("assessment") {
 		executesX {
 			val sets = List(4) {
-				val c = LabyrinthPlugin.labyrinth.songChartFactory.createSongChart(5, 15)
+				val c = chartRepo.createSongChart(5, 15)
 				logger.info("Created chart ${c.id}")
 				logger.debug("$c")
-				val s = LabyrinthPlugin.labyrinth.songSetFactory.createSongSet(
+				val s = songRepo.createSongSet(
 					"TestMusic",
 					"Me",
 					"",
@@ -53,7 +61,7 @@ fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule() = register("e
 				c
 			}
 
-			LabyrinthPlugin.labyrinth.assessmentInfoFactory.getAssessmentGroups()[0].setAssessmentForMedal(
+			assInfoRepo.getAssessmentGroups()[0].setAssessmentForMedal(
 				1,
 				100.0,
 				175.0,
@@ -61,7 +69,7 @@ fun CommandDispatcher<GatekeeperSource>.addGenerateExampleModule() = register("e
 				0.0,
 				sets.map { it.id })
 
-			val ass = LabyrinthPlugin.labyrinth.assessmentInfoFactory.getAssessmentGroups()[0].getAssessmentForMedal(1)!!
+			val ass = assInfoRepo.getAssessmentGroups()[0].getAssessmentForMedal(1)!!
 			logger.debug("$ass")
 			logger.info("Created Assessment for level ${ass.id}, with ${ass.assessmentChartIds.size} charts inside")
 		}

@@ -13,9 +13,7 @@ repositories {
 
 dependencies {
     implementation(project(":booster"))
-    implementation(project(":booster-bomb"))
-    implementation(project(":booster-graphql"))
-    implementation(project(":booster-resource"))
+    implementation(project(":resource"))
     implementation(project(":labyrinth"))
     implementation(project(":labyrinth-mongodb"))
     implementation(project(":gatekeeper"))

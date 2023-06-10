@@ -1,8 +1,9 @@
 package explode2.booster
 
 import com.github.taskeren.config.Configuration
+import org.koin.core.component.KoinComponent
 
-interface BoosterPlugin {
+interface BoosterPlugin : KoinComponent {
 	val id: String
 	val version: String
 
@@ -22,11 +23,11 @@ interface BoosterPlugin {
 }
 
 fun <T> T.subscribeEvents() {
-	Booster.eventbus.register(this)
+	Explode.eventbus.register(this)
 }
 
 val BoosterPlugin.config: Configuration
-	get() = Booster.config(id)
+	get() = ExplodeConfig.get(id)
 
 fun BoosterPlugin.saveConfig() =
 	config.save()

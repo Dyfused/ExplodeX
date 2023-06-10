@@ -6,14 +6,17 @@ import cn.taskeren.brigadierx.literal
 import cn.taskeren.brigadierx.register
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
+import explode2.booster.gatekeeper.GatekeeperPlugin
 import explode2.booster.gatekeeper.GatekeeperSource
-import explode2.labyrinth.LabyrinthPlugin.Companion.labyrinth
 
-fun CommandDispatcher<GatekeeperSource>.addUserCommand() = register("user") {
+fun CommandDispatcher<GatekeeperSource>.addUserCommand(plugin: GatekeeperPlugin) = register("user") {
+
+	val userRepo = plugin.userRepo
+
 	argument("name", StringArgumentType.string()) {
 		executesX {
 			val id = StringArgumentType.getString(it, "name")
-			val user = labyrinth.gameUserFactory.getGameUserByName(id)
+			val user = userRepo.getGameUserByName(id)
 			if(user == null) {
 				println("User not found!")
 			} else {
@@ -26,7 +29,7 @@ fun CommandDispatcher<GatekeeperSource>.addUserCommand() = register("user") {
 				literal("get") {
 					executesX {
 						val id = StringArgumentType.getString(it, "name")
-						val user = labyrinth.gameUserFactory.getGameUserByName(id) ?: return@executesX println("User not found!")
+						val user = userRepo.getGameUserByName(id) ?: return@executesX println("User not found!")
 						val permKey = StringArgumentType.getString(it, "permission-key")
 						val hasPerm = user.hasPermission(permissionKey = permKey)
 						if(hasPerm) {
@@ -40,7 +43,7 @@ fun CommandDispatcher<GatekeeperSource>.addUserCommand() = register("user") {
 				literal("grant") {
 					executesX {
 						val id = StringArgumentType.getString(it, "name")
-						val user = labyrinth.gameUserFactory.getGameUserByName(id) ?: return@executesX println("User not found!")
+						val user = userRepo.getGameUserByName(id) ?: return@executesX println("User not found!")
 						val permKey = StringArgumentType.getString(it, "permission-key")
 						user.grantPermission(permKey)
 						println("Granted user permission: $permKey")
@@ -50,7 +53,7 @@ fun CommandDispatcher<GatekeeperSource>.addUserCommand() = register("user") {
 				literal("revoke") {
 					executesX {
 						val id = StringArgumentType.getString(it, "name")
-						val user = labyrinth.gameUserFactory.getGameUserByName(id) ?: return@executesX println("User not found!")
+						val user = userRepo.getGameUserByName(id) ?: return@executesX println("User not found!")
 						val permKey = StringArgumentType.getString(it, "permission-key")
 						user.revokePermission(permKey)
 						println("Granted user permission: $permKey")
@@ -60,7 +63,7 @@ fun CommandDispatcher<GatekeeperSource>.addUserCommand() = register("user") {
 				literal("reset") {
 					executesX {
 						val id = StringArgumentType.getString(it, "name")
-						val user = labyrinth.gameUserFactory.getGameUserByName(id) ?: return@executesX println("User not found!")
+						val user = userRepo.getGameUserByName(id) ?: return@executesX println("User not found!")
 						val permKey = StringArgumentType.getString(it, "permission-key")
 						user.resetPermission(permKey)
 						println("Granted user permission: $permKey")

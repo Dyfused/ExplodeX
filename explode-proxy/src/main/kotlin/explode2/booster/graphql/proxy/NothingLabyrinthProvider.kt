@@ -1,6 +1,9 @@
 package explode2.booster.graphql.proxy
 
-import explode2.gateau.*
+import explode2.gateau.GameUser
+import explode2.gateau.SongChart
+import explode2.gateau.SongSet
+import explode2.gateau.SongState
 import explode2.labyrinth.*
 import java.time.OffsetDateTime
 
@@ -10,10 +13,10 @@ import java.time.OffsetDateTime
  */
 class NothingLabyrinthProvider : LabyrinthProvider {
 
-	override val gameUserFactory: GameUserFactory
+	override val gameUserRepository: GameUserRepository
 		get() = getAndError()
-	override val songSetFactory: SongSetFactory
-		get() = object : SongSetFactory {
+	override val songSetRepository: SongSetRepository
+		get() = object : SongSetRepository {
 			override fun getSongSetById(id: String): SongSet? {
 				getAndError()
 			}
@@ -87,13 +90,13 @@ class NothingLabyrinthProvider : LabyrinthProvider {
 				getAndError()
 			}
 		}
-	override val songChartFactory: SongChartFactory
+	override val songChartRepository: SongChartRepository
 		get() = getAndError()
-	override val assessmentInfoFactory: AssessmentInfoFactory
+	override val assessmentInfoRepository: AssessmentInfoRepository
 		get() = getAndError()
-	override val gameRecordFactory: GameRecordFactory
+	override val gameRecordRepository: GameRecordRepository
 		get() = getAndError()
-	override val assessmentRecordFactory: AssessmentRecordFactory
+	override val assessmentRecordRepository: AssessmentRecordRepository
 		get() = getAndError()
 
 	private fun getAndError(): Nothing = error("NothingLabyrinthProvider provides nothing, plugins should never try getting the factories!")

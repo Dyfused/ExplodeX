@@ -5,10 +5,16 @@ import cn.taskeren.brigadierx.register
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import explode2.booster.BoosterPlugin
+import explode2.booster.Explode
 import explode2.booster.gatekeeper.command.addGenerateExampleModule
 import explode2.booster.gatekeeper.command.addUserCommand
-import explode2.labyrinth.LabyrinthPlugin
+import explode2.labyrinth.AssessmentInfoRepository
+import explode2.labyrinth.GameUserRepository
+import explode2.labyrinth.SongChartRepository
+import explode2.labyrinth.SongSetRepository
 import net.minecrell.terminalconsole.SimpleTerminalConsole
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.concurrent.thread
@@ -21,18 +27,25 @@ class GatekeeperPlugin : BoosterPlugin {
 	override val id: String = "gatekeeper"
 	override val version: String = "unspecified"
 
+	private val console: GatekeeperConsole = GatekeeperConsole()
+
+	internal val userRepo by inject<GameUserRepository>()
+	internal val assInfoRepo by inject<AssessmentInfoRepository>()
+	internal val songRepo by inject<SongSetRepository>()
+	internal val chartRepo by inject<SongChartRepository>()
+
 	override fun onInit() {
-		GatekeeperConsole.init()
+		console.init()
 	}
 
 	override fun onPostInit() {
 		thread(name = "Gatekeeper", isDaemon = true) {
-			GatekeeperConsole.start()
+			console.start()
 			logger.debug("Gatekeeper console terminated")
 		}
 	}
 
-	object GatekeeperConsole : SimpleTerminalConsole(), GatekeeperSource {
+	inner class GatekeeperConsole : SimpleTerminalConsole(), GatekeeperSource, KoinComponent {
 
 		private val dispatcher = CommandDispatcher<GatekeeperSource>()
 
@@ -47,12 +60,12 @@ class GatekeeperPlugin : BoosterPlugin {
 
 				register("labyrinth") {
 					executesX {
-						logger.info("Labyrinth: ${LabyrinthPlugin.labyrinth.javaClass.canonicalName}")
+						logger.info("Labyrinth: ${Explode.labyrinth.javaClass.canonicalName}")
 					}
 				}
 
-				addGenerateExampleModule()
-				addUserCommand()
+				addGenerateExampleModule(this@GatekeeperPlugin)
+				addUserCommand(this@GatekeeperPlugin)
 			}
 		}
 

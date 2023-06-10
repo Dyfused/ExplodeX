@@ -1,13 +1,15 @@
 package explode2.booster
 
-import explode2.booster.Booster.config
-import explode2.booster.Booster.dispatchEvent
+import explode2.booster.Explode.config
+import explode2.booster.Explode.dispatchEvent
 import explode2.booster.event.KtorInitEvent
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.util.forEachExceptional
 import io.github.lxgaming.classloader.ClassLoaderUtils
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import org.koin.core.context.startKoin
+import org.koin.logger.slf4jLogger
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
 import java.io.File
@@ -21,11 +23,18 @@ internal val logger = LoggerFactory.getLogger("Booster")
 
 lateinit var ktorServer: NettyApplicationEngine private set
 
+val koinApp = startKoin {
+	slf4jLogger()
+}
+
 fun main() {
 
 	Thread.currentThread().setUncaughtExceptionHandler { _, ex ->
 		logger.error("Fatal exception occurred on Main thread", ex)
 	}
+
+	// 初始化 Explode
+	Explode
 
 	// 加载插件
 	logger.info("Constructing plugins")
@@ -44,7 +53,7 @@ fun main() {
 	ExplodeService.dispatchPostInit()
 
 	// 保存所有配置文档的修改
-	Booster.saveAllConfig()
+	Explode.saveAllConfig()
 
 	// 启动服务器线程
 	thread(name = "ktor") {
@@ -68,6 +77,8 @@ fun main() {
 		logger.debug("Listening on ${addr}:${port}")
 
 		ktorServer = embeddedServer(Netty, port = port, host = addr) {
+			MainLogics.setupGraphQL(this)
+
 			// 启动服务器后发布注册事件
 			KtorModuleEvent(this).dispatchEvent()
 		}
@@ -78,6 +89,8 @@ fun main() {
 			exitProcess(1)
 		}
 	}
+
+	koinApp
 
 	logger.info("Boosted!")
 	// 主线程退出

@@ -1,0 +1,3 @@
+[submodule "TunerGamesEncryption"]
+	path = TunerGamesEncryption
+	url = git@github.com:Taskeren/Explode-Crypto.git

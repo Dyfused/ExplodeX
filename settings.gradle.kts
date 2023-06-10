@@ -1,20 +1,27 @@
 
-rootProject.name = "explode2"
+rootProject.name = "explode3"
 include("gateau")
 include("labyrinth")
 include("labyrinth-mongodb")
 include("booster")
-include("booster-graphql")
+include("resource")
 include("booster-maintain")
 include("gatekeeper")
 include("explode-all")
-include("booster-resource")
 include("explode-proxy")
-include("booster-bomb")
-include("booster-resource-redirect")
 
 include("dynamite-cli")
 project(":dynamite-cli").projectDir = file("devtools/dynamite-cli")
 
-include("aliyun-oss-resource")
-project(":aliyun-oss-resource").projectDir = file("booster-plugins/aliyun-oss-resource")
+fun includePlugin(pluginName: String) {
+	include(pluginName)
+	project(":$pluginName").projectDir = file("booster-plugins/$pluginName")
+}
+
+includePlugin("maintain")
+includePlugin("url-redirect-resource")
+includePlugin("aliyun-oss-resource")
+
+// TunerGames 加密解密库
+include("tunergames-encryption")
+project(":tunergames-encryption").projectDir = file("TunerGamesEncryption")

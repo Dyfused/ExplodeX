@@ -3,7 +3,7 @@ package explode2.labyrinth.mongo
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.*
-import explode2.booster.Booster.dispatchEvent
+import explode2.booster.Explode.dispatchEvent
 import explode2.gateau.*
 import explode2.labyrinth.*
 import explode2.labyrinth.event.SongCreatedEvent
@@ -17,9 +17,9 @@ import java.time.OffsetDateTime
 import java.util.*
 import java.util.regex.PatternSyntaxException
 
-class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoBuilder()) : SongSetFactory,
-	SongChartFactory,
-	GameUserFactory, GameRecordFactory, AssessmentRecordFactory, AssessmentInfoFactory {
+class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoBuilder()) : SongSetRepository,
+	SongChartRepository,
+	GameUserRepository, GameRecordRepository, AssessmentRecordRepository, AssessmentInfoRepository {
 
 	private val collSet = provider.getDatabase().getCollection<MongoSongSet>("Sets")
 	private val collChart = provider.getDatabase().getCollection<MongoSongChart>("Charts")
@@ -1048,7 +1048,7 @@ class LabyrinthMongoBuilder(private val client: MongoClient, private val databas
 	) : this(KMongo.createClient(connectionString), databaseName)
 
 	fun getClient(): MongoClient = client
-	fun getDatabase(): MongoDatabase = client.getDatabase(databaseName)
+	fun getDatabase(): MongoDatabase = client.getDatabase(databaseName).withKMongo()
 }
 
 private const val ThisDocument = "$$" + "ROOT"

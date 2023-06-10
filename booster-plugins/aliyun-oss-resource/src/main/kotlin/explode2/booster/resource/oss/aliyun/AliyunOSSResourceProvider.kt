@@ -5,8 +5,10 @@ import com.aliyun.oss.OSSClientBuilder
 import com.github.taskeren.config.Configuration
 import explode2.booster.resource.RedirectResourceProvider
 import explode2.booster.resource.ResourceReceiver
-import explode2.labyrinth.LabyrinthPlugin.Companion.labyrinth
+import explode2.labyrinth.GameUserRepository
 import explode2.logging.Colors
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -19,7 +21,7 @@ private const val STORE_COVER_PICTURE_TYPE = "store-cover"
 private const val CHART_MAP_TYPE = "chart-map"
 private const val USER_AVATAR_TYPE = "user-avatar"
 
-class AliyunOSSResourceProvider : RedirectResourceProvider, ResourceReceiver {
+class AliyunOSSResourceProvider : RedirectResourceProvider, ResourceReceiver, KoinComponent {
 
 	companion object {
 
@@ -77,15 +79,17 @@ class AliyunOSSResourceProvider : RedirectResourceProvider, ResourceReceiver {
 		}
 	}
 
+	private val gameUserRepo by inject<GameUserRepository>()
+
 	/**
 	 * 检查 Token 不为空，切用户存在
 	 */
 	private fun validateToken(token: String?) {
-		labyrinth.gameUserFactory.getGameUserById(token ?: error("soudayo is undefined")) ?: error("invalid token")
+		gameUserRepo.getGameUserById(token ?: error("soudayo is undefined")) ?: error("invalid token")
 	}
 
 	private fun validateTokenUpload(token: String?) {
-		labyrinth.gameUserFactory.getGameUserById(token ?: error("soudayo is undefined")) ?: error("invalid token")
+		gameUserRepo.getGameUserById(token ?: error("soudayo is undefined")) ?: error("invalid token")
 	}
 
 	override fun getMusic(id: String, token: String?): String {

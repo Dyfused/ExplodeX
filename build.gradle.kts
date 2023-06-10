@@ -11,18 +11,16 @@ plugins {
 }
 
 group = "explode"
-version = "1.0-SNAPSHOT"
+version = "3.0.0"
 
 allprojects {
 	if(!this.name.startsWith("explode")) {
 		tasks.withType<ShadowJar> {
 			dependencies {
 				exclude(project(":booster"))
-				exclude(project(":booster-graphql"))
-				exclude(project(":booster-resource"))
+				exclude(project(":resource"))
 				exclude(project(":labyrinth"))
 				exclude(project(":labyrinth-mongodb"))
-				exclude(project(":booster-maintain"))
 				exclude(project(":gatekeeper"))
 
 				exclude(dependency("org.jetbrains.kotlin:.*"))
@@ -37,11 +35,9 @@ repositories {
 
 dependencies {
     implementation(project(":booster"))
-    implementation(project(":booster-graphql"))
-    implementation(project(":booster-resource"))
+    implementation(project(":resource"))
     implementation(project(":labyrinth"))
     implementation(project(":labyrinth-mongodb"))
-    implementation(project(":booster-maintain"))
 
     implementation(project(":gatekeeper"))
 
