@@ -3,11 +3,13 @@ package explode2.booster.graphql.proxy
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.taskeren.config.Configuration
-import explode2.booster.graphql.NonNegativeInt
-import explode2.booster.graphql.definition.*
-import explode2.simplegql.*
+import explode2.simplegql.GraphQLData
+import explode2.simplegql.GraphQLDataR
 import explode2.simplegql.SimpleGraphQL.send
+import explode2.simplegql.SingleQuery
 import explode2.simplegql.SingleQuery.Companion.SingleQuery
+import graphql.NonNegativeInt
+import graphql.definition.*
 import graphql.schema.DataFetchingEnvironment
 import org.slf4j.LoggerFactory
 import java.io.File
