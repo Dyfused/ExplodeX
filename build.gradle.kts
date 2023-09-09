@@ -46,6 +46,8 @@ dependencies {
 
 application {
     mainClass.set("explode2.booster.BoosterMainKt")
+
+	tasks.run.get().workingDir = rootProject.projectDir.resolve("run")
 }
 
 allprojects {

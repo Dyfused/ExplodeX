@@ -1,13 +1,13 @@
 package explode2.booster
 
 import com.expediagroup.graphql.generator.extensions.print
+import explode2.booster.graphql.MazeProvider
+import explode2.booster.graphql.graphQLServer
 import explode2.booster.resource.ByteArrayResourceProvider
 import explode2.booster.resource.RedirectResourceProvider
 import explode2.booster.resource.ResourceReceiver
 import explode2.labyrinth.SongSetRepository
 import explode2.logging.Colors
-import graphql.MazeProvider
-import graphql.graphQLServer
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -33,6 +33,10 @@ object MainLogics : KoinComponent {
 
 		val welcome = listOf("❄", "❤", "\uD83D\uDCE2", "\uD83D\uDCE3")
 		val playground = Application::class.java.classLoader.getResource("graphql-playground/index.html")?.readText()
+			?.replace(
+				"\$BACKEND_URL\$",
+				"//127.0.0.1:10443/graphql"
+			)
 			?: "<p>Resource Not Found!</p>"
 
 		app.routing {
