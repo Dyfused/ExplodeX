@@ -57,6 +57,11 @@ allprojects {
                 includeGroup("com.mojang")
             }
         }
+		maven {
+			name = "Taskeren Repo Snapshot"
+			url = uri("http://play.elytra.cn:31055/snapshots")
+			isAllowInsecureProtocol = true
+		}
     }
 
     tasks.withType<JavaCompile> {

@@ -21,7 +21,3 @@ fun includePlugin(pluginName: String) {
 includePlugin("maintain")
 includePlugin("url-redirect-resource")
 includePlugin("aliyun-oss-resource")
-
-// TunerGames 加密解密库
-include("tunergames-encryption")
-project(":tunergames-encryption").projectDir = file("TunerGamesEncryption")

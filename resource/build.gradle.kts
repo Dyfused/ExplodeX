@@ -13,7 +13,7 @@ repositories {
 dependencies {
     api(project(":labyrinth"))
 
-    implementation(project(":tunergames-encryption"))
+    implementation("cn.taskeren.explode3:caretaker:1.0.0-SNAPSHOT")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     implementation("io.github.pdvrieze.xmlutil:core-jvm:0.85.0")
