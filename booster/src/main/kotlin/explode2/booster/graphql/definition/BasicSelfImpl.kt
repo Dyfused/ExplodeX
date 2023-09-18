@@ -1,7 +1,7 @@
 package explode2.booster.graphql.definition
 
-import explode2.booster.graphql.BasicMaze
 import explode2.booster.graphql.BasicMaze.getUser
+import explode2.booster.graphql.BasicMaze.refreshRankingListInHour
 import explode2.booster.graphql.GraphqlDataSource.assInfoRepo
 import explode2.booster.graphql.GraphqlDataSource.assRecRepo
 import explode2.booster.graphql.GraphqlDataSource.recRepo
@@ -33,8 +33,10 @@ object BasicSelfImpl : Self {
 	override suspend fun playRankSelf(env: DataFetchingEnvironment, chartId: String?): PlayRecordWithRankModel? {
 		val u = env.getUser().baah("invalid token")
 		val cid = chartId.baah("invalid chart id")
-		return if(BasicMaze.refreshRankingListInHour > 0) {
-			RefreshingRankingList.getOrCreate(cid, BasicMaze.refreshRankingListInHour, recRepo).get(u.id)
+		return if(refreshRankingListInHour > 0) {
+			RefreshingRankingList.getOrCreate(cid, refreshRankingListInHour, recRepo).get(u.id)
+		} else if(refreshRankingListInHour < 0) {
+			null
 		} else {
 			recRepo.getPlayerBestChartRecord(cid, u.id)?.tunerize()
 		}

@@ -1,5 +1,5 @@
 
-rootProject.name = "explode3"
+rootProject.name = "explode2+"
 include("gateau")
 include("labyrinth")
 include("labyrinth-mongodb")

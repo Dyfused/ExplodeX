@@ -294,6 +294,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		val l = limit.int.baah("invalid limit")
 		return if(refreshRankingListInHour > 0) {
 			RefreshingRankingList.getOrCreate(cid, refreshRankingListInHour, recRepo).get(l, s)
+		} else if(refreshRankingListInHour < 0) {
+			listOf()
 		} else {
 			recRepo
 				.getChartRecords(cid, l, s)

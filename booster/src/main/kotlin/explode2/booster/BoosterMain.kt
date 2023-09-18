@@ -6,6 +6,7 @@ import explode2.booster.event.KtorInitEvent
 import explode2.booster.event.KtorModuleEvent
 import explode2.booster.util.forEachExceptional
 import io.github.lxgaming.classloader.ClassLoaderUtils
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.koin.core.context.startKoin
@@ -76,12 +77,7 @@ fun main() {
 
 		logger.debug("Listening on ${addr}:${port}")
 
-		ktorServer = embeddedServer(Netty, port = port, host = addr) {
-			MainLogics.setupGraphQL(this)
-
-			// 启动服务器后发布注册事件
-			KtorModuleEvent(this).dispatchEvent()
-		}
+		ktorServer = embeddedServer(Netty, port = port, host = addr, module = Application::explodeModule)
 		try {
 			ktorServer.start(true)
 		} catch(e: BindException) {
@@ -91,6 +87,10 @@ fun main() {
 	}
 
 	koinApp
+
+	Runtime.getRuntime().addShutdownHook(thread(start = false, name = "Main Stopping Thread") {
+		Explode.saveAllConfig()
+	})
 
 	logger.info("Boosted!")
 	// 主线程退出
@@ -177,4 +177,12 @@ object ExplodeService {
 		logger.error(preludeMarker, "Exception occurred when post-initializing plugin ${plugin.id}", exception)
 	}
 
+}
+
+fun Application.explodeModule() {
+	MainLogics.setupGraphQL(this)
+	MainLogics.setupResource(this)
+
+	// 启动服务器后发布注册事件
+	KtorModuleEvent(this).dispatchEvent()
 }

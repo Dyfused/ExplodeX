@@ -29,7 +29,6 @@ import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import org.greenrobot.eventbus.Subscribe
 import org.koin.core.component.inject
-import org.koin.ktor.plugin.Koin
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
 import java.lang.reflect.Type
@@ -47,7 +46,7 @@ class BombPlugin : BoosterPlugin {
 	override val id: String = "bomb-api"
 	override val version: String = "1.0.0"
 
-	private val pathRaw = config.getString("route-path", "general", "explode2/booster/bomb/v{version}", "后端根地址")
+	private val pathRaw = config.getString("route-path", "general", "/bomb/v{version}", "后端根地址")
 	private val useSuperstar = config.getBoolean("superstar-admin", "general", true, "启用 Superstar 账号")
 
 	// 后门账号，用于创建初始账号
@@ -132,8 +131,6 @@ class BombPlugin : BoosterPlugin {
 
 				anyHost()
 			}
-
-			install(Koin)
 
 			routing {
 				route(path, bombModule)
