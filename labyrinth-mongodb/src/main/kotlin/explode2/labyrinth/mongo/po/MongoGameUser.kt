@@ -1,11 +1,13 @@
 package explode2.labyrinth.mongo.po
 
 import org.bson.codecs.pojo.annotations.BsonId
+import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 
 data class MongoGameUser(
 	@BsonId
-	val id: String,
+
+	val id: ObjectId,
 	val username: String,
 	val password: String,
 	val coin: Int,

@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.*
 import explode2.booster.Explode.dispatchEvent
+import explode2.booster.util.measureTimedValueAndPrint
 import explode2.gateau.*
 import explode2.labyrinth.*
 import explode2.labyrinth.event.SongCreatedEvent
@@ -11,6 +12,7 @@ import explode2.labyrinth.mongo.po.*
 import explode2.labyrinth.mongo.po.aggregated.*
 import explode2.labyrinth.util.StringProcessor
 import org.bson.conversions.Bson
+import org.bson.types.ObjectId
 import org.litote.kmongo.*
 import java.lang.Character.UnicodeScript
 import java.time.OffsetDateTime
@@ -292,12 +294,78 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 	// GAME USER
 
 	private fun updateMongoGameUser(id: String, value: MongoGameUser): MongoGameUser {
-		collUser.updateOneById(id, value, upsert())
-		return collUser.findOneById(id).nn("collUser.findOneById($id)")
+		collUser.updateOneById(ObjectId(id), value, upsert())
+		return collUser.findOneById(ObjectId(id)).nn("collUser.findOneById($id)")
 	}
 
 	override fun getGameUserById(id: String): GameUser? {
-		return collUser.findOneById(id)?.let(::GameUserDelegate)
+		return measureTimedValueAndPrint("Get User") { collUser.findOneById(ObjectId(id)) }?.let(::GameUserDelegate)
+	}
+
+	override fun getGameUserByIdThin(id: String): GameUser? {
+		// FIXME: chore
+		data class GameUserThin(
+			val id: ObjectId,
+			val username: String,
+		)
+
+		class GameUserThinDelegate(val delegate: GameUserThin): GameUser {
+			override val id: String
+				get() = delegate.id.toHexString()
+			override var username: String
+				get() = delegate.username
+				set(_) {}
+			override var coin: Int = 0
+			override var diamond: Int = 0
+			override var ppTime: OffsetDateTime = OffsetDateTime.now()
+			@Deprecated("Use Permission System instead")
+			override var isReviewer: Boolean = false
+			override val SongSet.isOwned: Boolean
+				get() = false
+			override val ownedSets: List<SongSet> = emptyList()
+
+			override fun calculateR(): Int {
+				data class MiddleObject(val data: Any)
+				data class AggregatedSumAcc(val sumAcc: Double)
+
+				return measureTimedValueAndPrint("Calc R") {
+					collGameRec.aggregate<AggregatedSumAcc>(
+						match(MongoGameRecord::playerId eq id),
+						sort(descending(MongoGameRecord::playedChartId, MongoGameRecord::r, MongoGameRecord::uploadTime)),
+						group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
+						Aggregates.replaceWith(MiddleObject::data),
+						sort(descending(MongoGameRecord::r, MongoGameRecord::uploadTime)),
+						limit(20),
+						group(null, Accumulators.sum("sumAcc", MongoGameRecord::r))
+					)
+				}.firstOrNull()?.sumAcc?.toInt() ?: 0
+			}
+
+			override fun calculateHighestGoldenMedal(): Int {
+				// FIXME: 需要修复性能问题
+				return 0
+			}
+
+			override fun changePassword(password: String) {}
+			override fun validatePassword(password: String): Boolean = false
+			override fun giveSet(setId: String) {}
+			override fun calculateLastRecords(limit: Int): List<GameRecord> = emptyList()
+			override fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord> = emptyList()
+			override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> = emptyList()
+			override val omegaCount: Int = 0
+			override fun hasPermission(permissionKey: String): Boolean = false
+			override fun hasPermission(permission: Permission): Boolean = false
+			override fun grantPermission(permissionKey: String) {}
+			override fun revokePermission(permissionKey: String) {}
+			override fun resetPermission(permissionKey: String) {}
+		}
+
+		return measureTimedValueAndPrint("Get User Thin") {
+			collUser.aggregate<GameUserThin>(
+				match(GameUserThin::id eq ObjectId(id)),
+				project(GameUserThin::id, GameUserThin::username)
+			)
+		}.firstOrNull()?.let(::GameUserThinDelegate)
 	}
 
 	override fun getGameUserByName(username: String): GameUser? {
@@ -312,7 +380,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		require(username.isValid()) { "username contains invalid characters" }
 		require(password.isValid()) { "password contains invalid characters" }
 
-		val actualId = id ?: createNewRandomUUID()
+		val actualId = if(ObjectId.isValid(id)) ObjectId(id) else ObjectId()
 		val u = MongoGameUser(
 			actualId,
 			username,
@@ -323,7 +391,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			false,
 			listOf()
 		)
-		return GameUserDelegate(updateMongoGameUser(actualId, u))
+		return GameUserDelegate(updateMongoGameUser(actualId.toHexString(), u))
 	}
 
 	// GAME RECORD
@@ -340,22 +408,26 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 	): Collection<GameRecord> {
 		data class MiddleObject<T>(val data: T)
 
-		return collGameRec.aggregate<MongoGameRecordRanked>(
-			match(MongoGameRecord::playedChartId eq chartId),
-			sort(
-				descending(
-					MongoGameRecord::playedChartId,
-					MongoGameRecord::playerId,
-					MongoGameRecord::score,
-					MongoGameRecord::uploadTime
-				)
-			),
-			group(MongoGameRecord::playerId, Accumulators.first("data", ThisDocument)),
-			Aggregates.replaceWith(MiddleObject<MongoGameRecord>::data),
-			Aggregates.setWindowFields(null, descending(MongoGameRecord::score), WindowOutputFields.rank("ranking")),
-			skip(skip),
-			limit(limit)
-		).map(::GameRecordRankedWrap).toList()
+		return measureTimedValueAndPrint("Leaderboards") {
+			collGameRec.aggregate<MongoGameRecordRanked>(
+				match(MongoGameRecord::playedChartId eq chartId),
+				sort(
+					descending(
+						MongoGameRecord::score,
+						MongoGameRecord::uploadTime
+					)
+				),
+				group(MongoGameRecord::playerId, Accumulators.first("data", ThisDocument)),
+				Aggregates.replaceWith(MiddleObject<MongoGameRecord>::data),
+				Aggregates.setWindowFields(
+					null,
+					descending(MongoGameRecord::score),
+					WindowOutputFields.rank("ranking")
+				),
+				skip(skip),
+				limit(limit),
+			)
+		}.map(::GameRecordRankedWrap).toList()
 	}
 
 	override fun getPlayerBestChartRecord(chartId: String, playerId: String): GameRecord? {
@@ -611,7 +683,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 	inner class GameUserDelegate(private var delegate: MongoGameUser) : GameUser {
 		override val id: String
-			get() = delegate.id
+			get() = delegate.id.toHexString()
 		override var username: String
 			get() = delegate.username
 			set(value) {
@@ -633,6 +705,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			set(value) {
 				delegate = updateMongoGameUser(id, delegate.copy(ppTime = value))
 			}
+		@Deprecated("Use Permission System instead")
 		override var isReviewer: Boolean
 			get() = delegate.isReviewer
 			set(value) {
@@ -645,15 +718,17 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			data class MiddleObject(val data: Any)
 			data class AggregatedSumAcc(val sumAcc: Double)
 
-			return collGameRec.aggregate<AggregatedSumAcc>(
-				match(MongoGameRecord::playerId eq id),
-				sort(descending(MongoGameRecord::playedChartId, MongoGameRecord::r, MongoGameRecord::uploadTime)),
-				group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
-				Aggregates.replaceWith(MiddleObject::data),
-				sort(descending(MongoGameRecord::r, MongoGameRecord::uploadTime)),
-				limit(20),
-				group(null, Accumulators.sum("sumAcc", MongoGameRecord::r))
-			).firstOrNull()?.sumAcc?.toInt() ?: 0
+			return measureTimedValueAndPrint("Calc R") {
+				collGameRec.aggregate<AggregatedSumAcc>(
+					match(MongoGameRecord::playerId eq id),
+					sort(descending(MongoGameRecord::playedChartId, MongoGameRecord::r, MongoGameRecord::uploadTime)),
+					group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
+					Aggregates.replaceWith(MiddleObject::data),
+					sort(descending(MongoGameRecord::r, MongoGameRecord::uploadTime)),
+					limit(20),
+					group(null, Accumulators.sum("sumAcc", MongoGameRecord::r))
+				)
+			}.firstOrNull()?.sumAcc?.toInt() ?: 0
 		}
 
 		override fun calculateHighestGoldenMedal(): Int {
@@ -816,7 +891,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val id: String
 			get() = value.id
 		override val playerId: String
-			get() = value.playerId
+			get() = value.playerId.toHexString()
 		override val playedChartId: String
 			get() = value.playedChartId
 		override val perfect: Int
@@ -834,7 +909,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val ranking: Int?
 			get() = value.ranking
 		override val player: GameUser
-			get() = getGameUserById(playerId).nn("getGameUserById($playerId)")
+			get() = getGameUserByIdThin(playerId).nn("getGameUserById($playerId)")
 
 		override fun toString(): String = value.toString()
 	}
@@ -890,7 +965,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val id: String
 			get() = value.id
 		override val playerId: String
-			get() = value.playerId
+			get() = value.playerId.toHexString()
 		override val assessmentId: String
 			get() = value.assessmentId
 		override val records: List<AssessmentRecord.AssessmentRecordEntry>
