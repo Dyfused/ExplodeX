@@ -72,7 +72,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			introduction,
 			coinPrice,
 			noterName,
-			noterUser?.id,
+			noterUser?.id?.let { ObjectId(it) },
 			charts,
 			publishTime,
 			state.category,
@@ -302,72 +302,6 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		return measureTimedValueAndPrint("Get User") { collUser.findOneById(ObjectId(id)) }?.let(::GameUserDelegate)
 	}
 
-	override fun getGameUserByIdThin(id: String): GameUser? {
-		// FIXME: chore
-		data class GameUserThin(
-			val id: ObjectId,
-			val username: String,
-		)
-
-		class GameUserThinDelegate(val delegate: GameUserThin): GameUser {
-			override val id: String
-				get() = delegate.id.toHexString()
-			override var username: String
-				get() = delegate.username
-				set(_) {}
-			override var coin: Int = 0
-			override var diamond: Int = 0
-			override var ppTime: OffsetDateTime = OffsetDateTime.now()
-			@Deprecated("Use Permission System instead")
-			override var isReviewer: Boolean = false
-			override val SongSet.isOwned: Boolean
-				get() = false
-			override val ownedSets: List<SongSet> = emptyList()
-
-			override fun calculateR(): Int {
-				data class MiddleObject(val data: Any)
-				data class AggregatedSumAcc(val sumAcc: Double)
-
-				return measureTimedValueAndPrint("Calc R") {
-					collGameRec.aggregate<AggregatedSumAcc>(
-						match(MongoGameRecord::playerId eq id),
-						sort(descending(MongoGameRecord::playedChartId, MongoGameRecord::r, MongoGameRecord::uploadTime)),
-						group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
-						Aggregates.replaceWith(MiddleObject::data),
-						sort(descending(MongoGameRecord::r, MongoGameRecord::uploadTime)),
-						limit(20),
-						group(null, Accumulators.sum("sumAcc", MongoGameRecord::r))
-					)
-				}.firstOrNull()?.sumAcc?.toInt() ?: 0
-			}
-
-			override fun calculateHighestGoldenMedal(): Int {
-				// FIXME: 需要修复性能问题
-				return 0
-			}
-
-			override fun changePassword(password: String) {}
-			override fun validatePassword(password: String): Boolean = false
-			override fun giveSet(setId: String) {}
-			override fun calculateLastRecords(limit: Int): List<GameRecord> = emptyList()
-			override fun calculateBestRecords(limit: Int, sortedBy: ScoreOrRanking): List<GameRecord> = emptyList()
-			override fun getAllRecords(limit: Int, skip: Int): List<GameRecord> = emptyList()
-			override val omegaCount: Int = 0
-			override fun hasPermission(permissionKey: String): Boolean = false
-			override fun hasPermission(permission: Permission): Boolean = false
-			override fun grantPermission(permissionKey: String) {}
-			override fun revokePermission(permissionKey: String) {}
-			override fun resetPermission(permissionKey: String) {}
-		}
-
-		return measureTimedValueAndPrint("Get User Thin") {
-			collUser.aggregate<GameUserThin>(
-				match(GameUserThin::id eq ObjectId(id)),
-				project(GameUserThin::id, GameUserThin::username)
-			)
-		}.firstOrNull()?.let(::GameUserThinDelegate)
-	}
-
 	override fun getGameUserByName(username: String): GameUser? {
 		return collUser.findOne(MongoGameUser::username eq username)?.let(::GameUserDelegate)
 	}
@@ -446,7 +380,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			group(MongoGameRecord::playerId, Accumulators.first("data", ThisDocument)),
 			Aggregates.replaceWith(MiddleObject<MongoGameRecord>::data),
 			Aggregates.setWindowFields(null, descending(MongoGameRecord::score), WindowOutputFields.rank("ranking")),
-			match(MongoGameRecord::playerId eq playerId)
+			match(MongoGameRecord::playerId eq ObjectId(playerId))
 		).firstOrNull()?.let(::GameRecordRankedWrap)
 	}
 
@@ -463,7 +397,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		val actualId = id ?: createNewRandomUUID()
 		val rec = MongoGameRecord(
 			actualId,
-			playerId,
+			ObjectId(playerId),
 			chartId,
 			score,
 			RecordDetail(perfect, good, miss),
@@ -529,7 +463,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			group(MongoAssessRecord::playerId, Accumulators.first("data", ThisDocument)),
 			Aggregates.replaceWith(MiddleObject::data),
 			Aggregates.setWindowFields(null, descending(MiddleObject::sumAccuracy), WindowOutputFields.rank("ranking")),
-			match(MongoAssessRecord::playerId eq playerId)
+			match(MongoAssessRecord::playerId eq ObjectId(playerId))
 		).firstOrNull()?.let(::AssessmentRecordRankedWrap)
 	}
 
@@ -544,7 +478,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		val actualId = id ?: createNewRandomUUID()
 		val rec = MongoAssessRecord(
 			actualId,
-			playerId,
+			ObjectId(playerId),
 			assessmentId,
 			records.map { AssessmentRecordDetail(it.perfect, it.good, it.miss, it.score, it.accuracy) },
 			exRecord?.let { AssessmentRecordDetail(it.perfect, it.good, it.miss, it.score, it.accuracy) },
@@ -606,9 +540,9 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				delegate = updateMongoSongSet(id, delegate.copy(noterName = value))
 			}
 		override var noterUserId: String?
-			get() = delegate.noterUserId
+			get() = delegate.noterUserId?.toHexString()
 			set(value) {
-				delegate = updateMongoSongSet(id, delegate.copy(noterUserId = value))
+				delegate = updateMongoSongSet(id, delegate.copy(noterUserId = ObjectId(value)))
 			}
 		override var chartIds: List<String>
 			get() = delegate.chartIds
@@ -720,7 +654,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 			return measureTimedValueAndPrint("Calc R") {
 				collGameRec.aggregate<AggregatedSumAcc>(
-					match(MongoGameRecord::playerId eq id),
+					match(MongoGameRecord::playerId eq ObjectId(id)),
 					sort(descending(MongoGameRecord::playedChartId, MongoGameRecord::r, MongoGameRecord::uploadTime)),
 					group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
 					Aggregates.replaceWith(MiddleObject::data),
@@ -762,7 +696,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 		override fun calculateLastRecords(limit: Int): List<GameRecord> {
 			return collGameRec.aggregate<MongoGameRecord>(
-				match(MongoGameRecord::playerId eq id),
+				match(MongoGameRecord::playerId eq ObjectId(id)),
 				sort(descending(MongoGameRecord::uploadTime)),
 				limit(limit)
 			).toList().map(::GameRecordWrap)
@@ -774,7 +708,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			val sortingField = if(sortedBy == ScoreOrRanking.Ranking) MongoGameRecord::r else MongoGameRecord::score
 
 			return collGameRec.aggregate<MongoGameRecord>(
-				match(MongoGameRecord::playerId eq id),
+				match(MongoGameRecord::playerId eq ObjectId(id)),
 				sort(descending(MongoGameRecord::playedChartId, sortingField, MongoGameRecord::uploadTime)),
 				group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
 				Aggregates.replaceWith(MiddleObject::data),
@@ -792,7 +726,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 				data class Omegas(val omegas: Int)
 
 				return collGameRec.aggregate<Omegas>(
-					match(MongoGameRecord::playerId eq id),
+					match(MongoGameRecord::playerId eq ObjectId(id)),
 					match(MongoGameRecord::score eq 1_000_000),
 					group(MongoGameRecord::playedChartId, Accumulators.first("data", ThisDocument)),
 					Aggregates.count("omegas")
@@ -864,7 +798,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val id: String
 			get() = value.id
 		override val playerId: String
-			get() = value.playerId
+			get() = value.playerId.toHexString()
 		override val playedChartId: String
 			get() = value.playedChartId
 		override val perfect: Int
@@ -909,7 +843,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val ranking: Int?
 			get() = value.ranking
 		override val player: GameUser
-			get() = getGameUserByIdThin(playerId).nn("getGameUserById($playerId)")
+			get() = getGameUserById(playerId).nn("getGameUserById($playerId)")
 
 		override fun toString(): String = value.toString()
 	}
@@ -918,7 +852,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		override val id: String
 			get() = value.id
 		override val playerId: String
-			get() = value.playerId
+			get() = value.playerId.toHexString()
 		override val assessmentId: String
 			get() = value.assessmentId
 		override val records: List<AssessmentRecord.AssessmentRecordEntry>

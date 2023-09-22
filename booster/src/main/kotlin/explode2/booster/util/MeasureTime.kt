@@ -33,6 +33,7 @@ private fun putAvgDuration(subject: String, duration: Duration) {
 
 private fun getAvgDuration(subject: String): Duration {
 	val durations = subjectDurations[subject] ?: return 0.seconds
-	val avgMs = durations.map { it.inWholeNanoseconds }.average()
+	// toList(), to clone the list, to avoid ConcurrentModificationException
+	val avgMs = durations.toList().map { it.inWholeNanoseconds }.average()
 	return avgMs.nanoseconds
 }

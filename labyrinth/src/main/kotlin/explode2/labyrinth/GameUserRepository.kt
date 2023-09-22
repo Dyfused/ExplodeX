@@ -6,8 +6,6 @@ interface GameUserRepository {
 
 	fun getGameUserById(id: String): GameUser?
 
-	fun getGameUserByIdThin(id: String): GameUser?
-
 	fun getGameUserByName(username: String): GameUser?
 
 	fun createGameUser(username: String, password: String, id: String? = null): GameUser

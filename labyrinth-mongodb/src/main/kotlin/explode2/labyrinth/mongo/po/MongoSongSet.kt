@@ -1,6 +1,7 @@
 package explode2.labyrinth.mongo.po
 
 import org.bson.codecs.pojo.annotations.BsonId
+import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 
 data class MongoSongSet(
@@ -11,7 +12,7 @@ data class MongoSongSet(
 	val introduction: String,
 	val coinPrice: Int,
 	val noterName: String,
-	val noterUserId: String?,
+	val noterUserId: ObjectId?,
 	val chartIds: List<String>,
 	val publishTime: OffsetDateTime,
 	/**
