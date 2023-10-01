@@ -281,7 +281,7 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 			"refresh-ranking-list-in-hours",
 			"general",
 			12,
-			0,
+			Int.MIN_VALUE,
 			Int.MAX_VALUE,
 			"The hours to expire a ranking list. Non-positive to disable refreshing list."
 		)

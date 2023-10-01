@@ -26,7 +26,7 @@ use(config.db_name)
 let success_count = 0;
 let error_count = 0;
 
-db.Users.find().forEach(user => {
+db.Users.find({_id: {$type: "string"}}).forEach(user => {
     try {
         const user_id = user._id
 
