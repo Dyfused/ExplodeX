@@ -314,7 +314,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 		require(username.isValid()) { "username contains invalid characters" }
 		require(password.isValid()) { "password contains invalid characters" }
 
-		val actualId = if(ObjectId.isValid(id)) ObjectId(id) else ObjectId()
+		val actualId = if(id != null && ObjectId.isValid(id)) ObjectId(id) else ObjectId()
 		val u = MongoGameUser(
 			actualId,
 			username,
