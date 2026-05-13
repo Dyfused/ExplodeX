@@ -197,18 +197,14 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 				// 默认模糊查询名字（先尝试正则，编译失败则降级为字面量匹配）
 				else -> {
-					kotlin.runCatching {
-						val regex = Regex(matchingName)
-						pipeline += match(MongoSongSet::musicName.regex(regex, "i"))
-					}.onFailure {
-						if(it is PatternSyntaxException) {
-							// 不完整的正则表达式，降级为字面量模糊搜索
-							val literalPattern = Regex.escape(matchingName)
-							pipeline += match(MongoSongSet::musicName.regex(literalPattern, "i"))
-						} else {
-							throw it
-						}
+					val patternString = kotlin.runCatching {
+						Regex(matchingName) // 验证是否为合法正则
+						matchingName // 合法则使用原始字符串
+					}.getOrElse {
+						// 非法正则（如不完整的 ?、[ 等），降级为字面量
+						Regex.escape(matchingName)
 					}
+					pipeline += match(MongoSongSet::musicName.regex(patternString, "i"))
 				}
 			}
 		}
