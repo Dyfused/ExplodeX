@@ -195,9 +195,20 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 					}
 				}
 
-				// 默认模糊查询名字
+				// 默认模糊查询名字（先尝试正则，编译失败则降级为字面量匹配）
 				else -> {
-					pipeline += match(MongoSongSet::musicName.regex(matchingName, "i"))
+					kotlin.runCatching {
+						val regex = Regex(matchingName)
+						pipeline += match(MongoSongSet::musicName.regex(regex, "i"))
+					}.onFailure {
+						if(it is PatternSyntaxException) {
+							// 不完整的正则表达式，降级为字面量模糊搜索
+							val literalPattern = Regex.escape(matchingName)
+							pipeline += match(MongoSongSet::musicName.regex(literalPattern, "i"))
+						} else {
+							throw it
+						}
+					}
 				}
 			}
 		}
