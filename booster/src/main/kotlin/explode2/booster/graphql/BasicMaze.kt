@@ -219,6 +219,7 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 
 		val u = env.getUser()
 
+		// category mapping
 		val cate = when {
 			isHidden == 1 -> SearchCategory.HIDDEN
 			isOfficial == 1 -> SearchCategory.OFFICIAL
@@ -226,12 +227,17 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 			isRanked == -1 -> SearchCategory.UNRANKED
 			else -> SearchCategory.ALL
 		}
+
+		// sort type mapping
+		// see ExplodeX/labyrinth/src/main/kotlin/explode2/labyrinth/SearchEnums.kt for details
 		val sort = when {
 			playCountOrder == -1 -> SearchSort.DESCENDING_BY_PLAY_COUNT
 			publishTimeOrder == -1 -> SearchSort.DESCENDING_BY_PUBLISH_TIME
+			publishTimeOrder == 1 -> SearchSort.ASCENDING_BY_PUBLISH_TIME
 			else -> boom("invalid ordering")
 		}
 
+		// return result
 		return songRepo.searchSongSets(
 			musicTitle,
 			cate,

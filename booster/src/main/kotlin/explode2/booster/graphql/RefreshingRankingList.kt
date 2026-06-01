@@ -26,11 +26,12 @@ data class RefreshingRankingList(
 		lastUpdateTime = LocalDateTime.now()
 	}
 
+	// fix hardcoded 24 hours refreshing
 	fun get(): List<PlayRecordWithRankModel> {
 		val lastUpdateTime = lastUpdateTime
 		if(
 			lastUpdateTime == null ||
-			lastUpdateTime + 24.hours.toJavaDuration() <= LocalDateTime.now() ||
+			lastUpdateTime + expireHours.hours.toJavaDuration() <= LocalDateTime.now() ||
 			cache == null
 		) {
 			update()
@@ -45,11 +46,12 @@ data class RefreshingRankingList(
 		return get().drop(skip).take(limit)
 	}
 
+	// fix hardcoded 24 hours refreshing
 	fun get(playerId: String): PlayRecordWithRankModel? {
 		val lastUpdateTime = lastUpdateTime
 		if(
 			lastUpdateTime == null ||
-			lastUpdateTime + 24.hours.toJavaDuration() <= LocalDateTime.now() ||
+			lastUpdateTime + expireHours.hours.toJavaDuration() <= LocalDateTime.now() ||
 			cache == null
 		) {
 			update()

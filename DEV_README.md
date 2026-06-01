@@ -14,3 +14,14 @@
 
 ### 数据提供 Labyrinth 
 
+## Artifacts
+
+The final JARs you can get from this project are:
+
+- explode-all-(version).jar
+- explode-all-(version)-all.jar
+- explode-proxy-(version).jar
+- explode-proxy-(version)-all.jar
+
+For server deploying, use explode-all-(version)-all.jar, and run it with
+ `java -cp explode-all-(version)-ALL.jar explode2.booster.BoosterMainKt`

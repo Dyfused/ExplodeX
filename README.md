@@ -18,6 +18,8 @@ Or join our [Discord](https://discord.gg/BS5UZnsvVZ) server for English support.
 There is no well-documented code nor a helpful documentation to set up and use, so you need to figure it out by yourself
 or simply contact the contributors for help.
 
+Maybe you can refer to DEV_README.md?
+
 ### Env Vars
 
 *DB_URL*: The connection string to the database.

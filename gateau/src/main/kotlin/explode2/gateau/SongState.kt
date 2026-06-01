@@ -2,6 +2,7 @@
 
 package explode2.gateau
 
+/* The interface of how we parse the set entries of the database. */
 interface SongState {
 
 	var category: Int
