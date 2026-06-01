@@ -2,7 +2,7 @@
 
 package explode2.gateau
 
-/* The interface of how we parse the set entries of the database.*/
+/* The interface of how we parse the set entries of the database. */
 interface SongState {
 
 	var category: Int
@@ -19,7 +19,6 @@ interface SongState {
 	fun ranked() = apply { category = Ranked }
 	fun official() = apply { category = Official }
 
-	// how to parse the category field in database
 	companion object {
 		const val UnRanked = 0
 		const val Ranked = 1
