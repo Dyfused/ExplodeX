@@ -28,7 +28,7 @@ fun main(skip: Int = 0, limit: Int = 9) {
 
 	val matchingName = ""
 	val matchingCategory = SearchCategory.ALL
-	val sortBy = SearchSort.DESCENDING_BY_PUBLISH_TIME
+	val sortBy = SearchSort.ASCENDING_BY_PUBLISH_TIME
 
 	class SongSetWithCharts(val charts: List<MongoSongChart>)
 	class SongSetWithPlayCount(val playCount: Int)
@@ -174,6 +174,10 @@ fun main(skip: Int = 0, limit: Int = 9) {
 	when(sortBy) {
 		null, SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
 			pipeline += sort(descending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
+		}
+
+		SearchSort.ASCENDING_BY_PUBLISH_TIME -> {
+			pipeline += sort(ascending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
 		}
 
 		// FIXME: 修复性能问题

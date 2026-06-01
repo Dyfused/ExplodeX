@@ -6,6 +6,7 @@ import kotlin.math.pow
  * 来自某位 `一般路过鸟` 的神谕。
  *
  * 我们只需要铭记这位好鸟，不必知晓他的真实身份。如果你知道，也请你保密。
+ * i.e. the R calculation logic
  */
 object GoodBirdOracle {
 
