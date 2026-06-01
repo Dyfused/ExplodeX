@@ -18,6 +18,7 @@ interface SongState {
 	fun ranked() = apply { category = Ranked }
 	fun official() = apply { category = Official }
 
+	// how to parse the category field in database
 	companion object {
 		const val UnRanked = 0
 		const val Ranked = 1

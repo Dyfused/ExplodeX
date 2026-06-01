@@ -244,10 +244,15 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 		// 排序顺序
 		when(sortBy) {
-			null, SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
+			null, 
+			// Descending by time
+			SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
 				pipeline += sort(descending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
 			}
-
+			// Ascending by time (Updated 2026.6.2)
+			SearchSort.ASCENDING_BY_PUBLISH_TIME -> {
+        		pipeline += sort(ascending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
+    		}
 			// FIXME: 修复性能问题
 			SearchSort.DESCENDING_BY_PLAY_COUNT -> {
 				// 添加游玩次数查询
