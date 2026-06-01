@@ -4,8 +4,9 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
+// It's explode v3 now
 group = "explode"
-version = "1.0"
+version = "3.0.3"
 
 repositories {
     mavenCentral()

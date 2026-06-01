@@ -5,7 +5,7 @@ include("labyrinth")
 include("labyrinth-mongodb")
 include("booster")
 include("resource")
-includePlugin("maintain")  // booster-plugins/maintain -> :maintain
+// includePlugin("maintain")  // useless
 include("gatekeeper")
 include("explode-all")
 include("explode-proxy")
