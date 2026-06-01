@@ -31,7 +31,7 @@ object MainLogics : KoinComponent {
 		// output Maze provider info
 		gqlLogger.info("Using Maze: ${Colors.TianYi}${MazeProvider.getProvider().javaClass.canonicalName}")
 
-		val welcome = listOf("❄", "❤", "\uD83D\uDCE2", "\uD83D\uDCE3")
+		val welcome = listOf("❄", "❤", "\uD83D\uDCE2", "\uD83D\uDCE3", "氦")
 		val playground = Application::class.java.classLoader.getResource("graphql-playground/index.html")?.readText()
 			?.replace(
 				"\$BACKEND_URL\$",
