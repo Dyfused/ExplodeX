@@ -41,7 +41,9 @@ val graphQLServer = GraphQLServer<ApplicationCall>(
 	Companion.getProvider().query,
 	Companion.getProvider().mutation,
 	{ it.receiveText() },
-	{ mapOf("token" to (it.request.header("x-soudayo") ?: "trash-potato-server")) }
+	{ mapOf("token" to it.request.header("x-soudayo")) }
+	// { mapOf("token" to (it.request.header("x-soudayo") ?: "trash-potato-server")) }
+	// no more default x-soudayo value
 )
 
 class GraphQLServer<T>(
