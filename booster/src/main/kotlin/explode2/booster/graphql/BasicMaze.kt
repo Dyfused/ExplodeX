@@ -217,7 +217,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 		// 因为 refreshSet 导致的奇怪请求，直接返回空即可
 		if(isOfficial == null) return listOf()
 
-		val u = env.getUser()
+		// added login requirement (2026.6.2)
+		val u = env.getUser().baah("Authentication required")
 
 		// category mapping
 		val cate = when {
@@ -273,7 +274,8 @@ object BasicMaze : ExplodeQuery, ExplodeMutation, MazeProvider {
 	}
 
 	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel {
-		val u = env.getUser()
+		// added login requirement (2026.6.2)
+		val u = env.getUser().baah("Authentication required")
 		return songRepo.getSongSetById(_id.baah("invalid id")).baah("set not found").tunerize(u)
 	}
 

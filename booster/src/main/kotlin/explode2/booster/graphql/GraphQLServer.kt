@@ -26,6 +26,8 @@ import graphql.scalars.ExtendedScalars
 import graphql.schema.GraphQLType
 import io.ktor.server.application.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.http.HttpStatusCode
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
 import java.io.IOException
@@ -41,7 +43,18 @@ val graphQLServer = GraphQLServer<ApplicationCall>(
 	Companion.getProvider().query,
 	Companion.getProvider().mutation,
 	{ it.receiveText() },
-	{ mapOf("token" to (it.request.header("x-soudayo") ?: "trash-potato-server")) }
+	{ call ->
+		val header = call.request.header("x-soudayo")
+		if(header == null) {
+			emptyMap()
+		} else {
+			if(header.isBlank()) {
+				call.respond(HttpStatusCode.BadRequest, "x-soudayo header must not be empty")
+				throw IOException("Invalid x-soudayo header: empty")
+			}
+			mapOf<Any, Any>("token" to header)
+		}
+	}
 )
 
 class GraphQLServer<T>(

@@ -11,7 +11,7 @@ import org.greenrobot.eventbus.Subscribe
 class MaintainPlugin : BoosterPlugin {
 
 	override val id: String = "maintain"
-	override val version: String = "1.0.0"
+	override val version: String = "1.0.1"
 
 	init {
 		subscribeEvents()
@@ -19,9 +19,12 @@ class MaintainPlugin : BoosterPlugin {
 
 	@Subscribe
 	fun onKtorModule(e: KtorModuleEvent) = e.configure {
+		val resp = listOf("Maintain 7716 is now not working at server.",
+			"Welcome to Dynamite Explode!")
+
 		routing {
 			get("/") {
-				call.respondText("Maintain 7716 is now not working at server.")
+				call.respondText(resp.random())
 			}
 		}
 	}
