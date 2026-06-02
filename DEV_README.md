@@ -27,13 +27,14 @@ The final JARs you can get from this project are:
 For server deploying, use explode-all-(version)-all.jar, and run it with
  `java -cp explode-all-(version)-ALL.jar explode2.booster.BoosterMainKt`.
 
-Btw the plugins are stored in the "plugins" folder. You need to put the 
+Btw the plugins are stored in the "plugins" folder. You need to put the
 "plugins" folder under the same directory as the main server JAR in order
 to load all plugin JARs.
 
 ## Bomb API
 
-根请求地址与配置有关，默认模板为 `bomb/v{version}`，支持两个变量 `{version}` 是大版本号，目前是 2，`{version_patch}` 是小版本号，目前是 0。
+根请求地址与配置有关，默认模板为 `bomb/v{version}`，支持两个变量 `{version}` 是大版本号，目前是 2，
+`{version_patch}` 是小版本号，目前是 0。
 
 随意最最最默认的情况是 `http://localhost:10443/bomb/v2`
 
