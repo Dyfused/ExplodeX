@@ -19,8 +19,8 @@ class MaintainPlugin : BoosterPlugin {
 
 	@Subscribe
 	fun onKtorModule(e: KtorModuleEvent) = e.configure {
-		resp = listOf("Maintain 7716 is now not working at server.",
-		"Welcome to Dynamite Explode!")
+		val resp = listOf("Maintain 7716 is now not working at server.",
+			"Welcome to Dynamite Explode!")
 
 		routing {
 			get("/") {
