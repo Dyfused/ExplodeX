@@ -23,6 +23,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -117,9 +118,7 @@ class BombPlugin : BoosterPlugin {
 				}
 			}
 
-			install(Routing) {
-				ignoreTrailingSlash = true
-			}
+			install(IgnoreTrailingSlash)
 
 			install(CORS) {
 				// Get, Post, Head are in the default allow list, so no need to add them.
