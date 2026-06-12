@@ -23,6 +23,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.plugins.IgnoreTrailingSlash
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -117,6 +118,8 @@ class BombPlugin : BoosterPlugin {
 				}
 			}
 
+			install(IgnoreTrailingSlash)
+
 			install(CORS) {
 				// Get, Post, Head are in the default allow list, so no need to add them.
 				allowMethod(HttpMethod.Put)
@@ -168,9 +171,6 @@ private val bombModule: RouteConfigure = {
 
 	// <GET>[/] or [] 用来测试的接口(欢迎语)
     route("") {
-        get { bombCall.respondData(WelcomeBO(welcomeMessages.random()).toData()) }
-    }
-    route("/") {
         get { bombCall.respondData(WelcomeBO(welcomeMessages.random()).toData()) }
     }
 
