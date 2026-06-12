@@ -170,9 +170,7 @@ private val bombModule: RouteConfigure = {
 	logger.debug(configureMarker, "Installing DefaultModule")
 
 	// <GET>[/] or [] 用来测试的接口(欢迎语)
-    route("") {
-        get { bombCall.respondData(WelcomeBO(welcomeMessages.random()).toData()) }
-    }
+    get { bombCall.respondData(WelcomeBO(welcomeMessages.random()).toData()) }
 
 	// 用户接口模块
 	logger.debug(configureMarker, "Installing UserModule")
