@@ -23,13 +23,35 @@ jobs:
         distribution: 'temurin'
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6
-    - name: Build with Gradle and Check JVM target version
+    - name: Build with Gradle
+      run: ./gradlew build -x test
+    - name: Verify bytecode version (JVM 17)
       run: |
-        ./gradlew build -x test 2>&1 | tee build.log
-        BUILD_EXIT_CODE=${PIPESTATUS[0]}
-        ./gradlew properties 2>&1 | grep -i "java\|jvm"
-        cat build.log || echo "Build log not available"
-        exit $BUILD_EXIT_CODE
+        JAVA17_MAJOR=61
+        FAILED=0
+        for jar in explode-all/build/libs/*.jar explode-proxy/build/libs/*.jar booster-plugins/*/build/libs/*.jar; do
+          [ -f "$jar" ] || continue
+          echo "Checking $jar"
+          FIRST_CLASS=$(unzip -Z1 "$jar" '*.class' | head -1)
+          if [ -n "$FIRST_CLASS" ]; then
+            TMPDIR=$(mktemp -d)
+            unzip -q -p "$jar" "$FIRST_CLASS" > "$TMPDIR/check.class"
+            MAJOR=$(od -An -j6 -N2 --endian=big -t u2 "$TMPDIR/check.class" | tr -d ' ')
+            echo "  major version: $MAJOR"
+            rm -rf "$TMPDIR"
+            if [ "$MAJOR" != "$JAVA17_MAJOR" ]; then
+              echo "  ERROR: expected $JAVA17_MAJOR, got $MAJOR"
+              FAILED=1
+            fi
+          else
+            echo "  WARNING: no .class files found"
+          fi
+        done
+        if [ "$FAILED" -ne 0 ]; then
+          echo "Bytecode version check failed!"
+          exit 1
+        fi
+        echo "All checked JARs are JVM 17 bytecode (major version 61)."
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:

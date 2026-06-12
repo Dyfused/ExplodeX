@@ -97,8 +97,10 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 		class SongSetWithCharts(val charts: List<MongoSongChart>)
 		class SongSetWithPlayCount(val playCount: Int)
+		class SongSetExactMatch(val exactMatch: Boolean)
 
 		val pipeline: MutableList<Bson> = mutableListOf()
+		var isNameSearch = false
 
 		if(!matchingName.isNullOrBlank()) {
 			val proc = StringProcessor(matchingName)
@@ -197,6 +199,7 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 
 				// 默认模糊查询名字（先尝试正则，编译失败则降级为字面量匹配）
 				else -> {
+					isNameSearch = true
 					val patternString = kotlin.runCatching {
 						Regex(matchingName) // 验证是否为合法正则
 						matchingName // 合法则使用原始字符串
@@ -242,17 +245,39 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 			}
 		}
 
+		// 为名称搜索添加精确匹配字段，以便优先返回精确匹配的结果
+		if(isNameSearch) {
+			pipeline += addFields(Field(
+				"exactMatch",
+				MongoOperator.eq.from(listOf("\$musicName", matchingName))
+			))
+		}
+
 		// 排序顺序
 		when(sortBy) {
 			null, 
 			// Descending by time
 			SearchSort.DESCENDING_BY_PUBLISH_TIME -> {
-				pipeline += sort(descending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
+				pipeline += sort(
+					descending(
+						SongSetExactMatch::exactMatch,
+						MongoSongSet::publishTime,
+						MongoSongSet::musicName,
+						MongoSongSet::id
+					)
+				)
 			}
 			// Ascending by time (Updated 2026.6.2)
 			SearchSort.ASCENDING_BY_PUBLISH_TIME -> {
-        		pipeline += sort(ascending(MongoSongSet::publishTime, MongoSongSet::musicName, MongoSongSet::id))
-    		}
+				pipeline += sort(
+					descending(
+						SongSetExactMatch::exactMatch,
+						MongoSongSet::publishTime,
+						MongoSongSet::musicName,
+						MongoSongSet::id
+					)
+				)
+			}
 			// FIXME: 修复性能问题
 			SearchSort.DESCENDING_BY_PLAY_COUNT -> {
 				// 添加游玩次数查询
@@ -261,7 +286,14 @@ class MongoManager(private val provider: LabyrinthMongoBuilder = LabyrinthMongoB
 					"playCount",
 					MongoOperator.size.from("\$playRecords")
 				))
-				pipeline += sort(descending(SongSetWithPlayCount::playCount, MongoSongSet::musicName, MongoSongSet::id))
+				pipeline += sort(
+					descending(
+						SongSetExactMatch::exactMatch,
+						SongSetWithPlayCount::playCount,
+						MongoSongSet::musicName,
+						MongoSongSet::id
+					)
+				)
 			}
 		}
 
