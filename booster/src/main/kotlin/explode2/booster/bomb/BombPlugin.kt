@@ -23,7 +23,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.plugins.IgnoreTrailingSlash
+import io.ktor.server.plugins.ignoretrailingslash.IgnoreTrailingSlash
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
