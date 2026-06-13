@@ -23,6 +23,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.routing.IgnoreTrailingSlash
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -56,7 +57,8 @@ class BombPlugin : BoosterPlugin {
 
 	init {
 		subscribeEvents()
-		saveConfig()
+		// actually generates a blank .cfg file.
+		saveConfig() 
 
 		if(useSuperstar) {
 			logger.info(superstarMarker, "Superstar Enabled")
@@ -116,6 +118,8 @@ class BombPlugin : BoosterPlugin {
 				}
 			}
 
+			install(IgnoreTrailingSlash)
+
 			install(CORS) {
 				// Get, Post, Head are in the default allow list, so no need to add them.
 				allowMethod(HttpMethod.Put)
@@ -165,10 +169,8 @@ private val bombModule: RouteConfigure = {
 
 	logger.debug(configureMarker, "Installing DefaultModule")
 
-	// <GET>[/] 用来测试的接口
-	get {
-		bombCall.respondData(WelcomeBO(welcomeMessages.random()).toData())
-	}
+	// <GET>[/] or [] 用来测试的接口(欢迎语)
+    get { bombCall.respondData(WelcomeBO(welcomeMessages.random()).toData()) }
 
 	// 用户接口模块
 	logger.debug(configureMarker, "Installing UserModule")

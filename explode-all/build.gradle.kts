@@ -6,7 +6,7 @@ plugins {
 
 // It's explode v3 now
 group = "explode"
-version = "3.0.3"
+version = "3.0.4"
 
 repositories {
     mavenCentral()
